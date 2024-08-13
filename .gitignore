@@ -3,6 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.idea/
+data/
+MetaGPT/
+.base.env
+.base.media.yaml
+.env
+.media.yaml
+
+
 # C extensions
 *.so
 

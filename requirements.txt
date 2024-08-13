@@ -1,0 +1,17 @@
+pylint
+pytest
+python-dotenv
+
+httpx
+pydantic
+requests
+beautifulsoup4
+lxml
+sqlalchemy
+psycopg2
+fake-useragent
+pyyaml
+opencv-python
+pandas
+
+markdown2

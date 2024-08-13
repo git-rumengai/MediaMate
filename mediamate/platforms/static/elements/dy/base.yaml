@@ -1,0 +1,196 @@
+common:
+  verify:
+    title:
+      name: '滑窗标题'
+      xpath: '//div[contains(@class, "请完成下列验证")]'
+    bg_img:
+      name: '背景图'
+      xpath: 'img.captcha-verify-image'
+    gap_img:
+      name: '滑动图'
+      xpath: 'img#captcha-verify_img_slide'
+    bar:
+      name: '滑动按钮'
+      xpath: 'div.captcha-slider-btn'
+  tips_move:
+    name: '滚动视频提示'
+    xpath: '//div[@id="douyin-web-recommend-guide-mask"]//span[contains(text(), "键盘下键")]'
+  tips_audio:  # 不用处理
+    name: '打开声音提示'
+    xpath: '//div[@data-e2e="feed-active-video"]//span[contains(text(), "点击打开声音")]'
+  page_loading:
+    name: '页面加载中'
+    xpath: '//div[@class="uzRfxSxz lytIudkE"]/div[contains(text(), "加载中")]'
+  tips_default:
+    name: '默认页面'
+    xpath: '//div[@class="modal-pannel"]/div[2]/*[name()="svg"]'
+
+discover:
+  name: '首页'
+  url: '/discover'
+  xpath: '//*[@id="douyin-navigation"]//span[contains(text(), "首页")]'
+  nav_:
+    name: '导航框'
+    xpath: '//*[@id="douyin-navigation"]'
+  header_:
+    name: '头部框'
+    xpath: '//*[@id="douyin-header"]'
+  container_:
+    name: '内容框'
+    xpath: '//*[@id="waterFallScrollContainer"]'
+  container_list:
+    name: '播放列表'
+    xpath: '//*[@id="waterFallScrollContainer"]/div[not(@id="hotItem")]'
+    _live:
+      name: '直播中'
+      xpath: '//div[text()="直播中"]'
+  hot_:
+    name: '热榜框'
+    xpath: '//*[@id="hotItem"]'
+  hot:
+    name: '热榜'
+    xpath: '//*[@id="semiTab抖音热榜"]'
+  game:
+    name: '娱乐榜'
+    xpath: '//*[@id="semiTab娱乐榜"]'
+  social:
+    name: '社会榜'
+    xpath: '//*[@id="semiTab社会榜"]'
+  challenge:
+    name: '挑战榜'
+    xpath: '//*[@id="semiTab挑战榜"]'
+  hot_list:
+    name: '榜单列表'
+    xpath: '//*[@id="hotItem"]//ul[contains(@class, "hotChangableList")]/li'
+
+player:
+  name: '播放页'
+  exit:
+    name: '退出'
+    xpath: '//*[@id="douyin-right-container"]//div[contains(@class, "pGZF8lyn")]'
+  info_:
+    name: '信息框'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@id="video-info-wrap"]'
+  account:
+    name: '账户'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@id="video-info-wrap"]/div[1]/div[1]'
+  title:
+    name: '标题'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@id="video-info-wrap"]/div[1]/div[2]'
+  statement:
+    name: '作者声明'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@id="video-info-wrap"]/div[1]/div[4]'
+  action_:
+    name: '操作框'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="jkfSVWLT"]'
+  author:
+    name: '作者主页'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="jkfSVWLT"]/div[1]'
+  like:
+    name: '点赞'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="jkfSVWLT"]/div[2]'
+  collect:
+    name: '收藏'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="jkfSVWLT"]/div[4]'
+  share:
+    name: '分享'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="jkfSVWLT"]/div[5]'
+  comment:
+    name: '评论'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="jkfSVWLT"]/div[3]'
+    comment_:
+      name: '评论框'
+      xpath: '//div[@data-e2e="feed-active-video"]//div[@id="relatedVideoCard"]'
+    nav_:
+      name: '评论导航框'
+      xpath: '//div[@data-e2e="feed-active-video"]//div[@id="relatedVideoCard"]//div[@role="tablist"]'
+    author_card:
+      name: 'TA的作品'
+      xpath: '//div[@id="semiTabauthor_card"]'
+    comment_card:
+      name: '评论'
+      xpath: '//div[@id="semiTabcomment"]'
+    related_card:
+      name: '相关推荐'
+      xpath: '//div[@id="semiTabrelated_card"]'
+    compilation_card:
+      name: '相关推荐'
+      xpath: '//div[@id="semiTabcompilation_card"]'
+    text_comment:
+      name: '全部评论'
+      xpath: '//div[@id="merge-all-comment-container"]//span[contains(text(), "全部评论")]'
+    comments_list:
+      name: '全部评论列表'
+      xpath: '//div[@id="merge-all-comment-container"]//div[@data-e2e="comment-list"]/div'
+      _author:
+        name: '用户'
+        xpath: '/div/div[2]/div[1]//div[@class="ax6MlHvK"]'
+      _content:
+        name: '评论内容'
+        xpath: '/div/div[2]/div[1]//span[@class="j5WZzJdp"]'
+    mention_list:
+      name: '提及某人'
+      xpath: '//div[@class="richtext-container"]/div[2]/div/div'
+    loading:
+      name: '加载中'
+      xpath: '//div[@class="C8kUloYh" and text()="加载中"]'
+    input:
+      name: '输入评论'
+      xpath: '//span[contains(text(), "留下你的")]'
+    close:
+      name: '退出'
+      xpath: '//div[@id="relatedVideoCard"]/div/div[1]/div[2]'
+
+search:
+  user_list:
+    name: '用户列表'
+    xpath: '//div[@id="search-content-area"]/div/div/div[2]/div[3]/ul/li'
+    _url:
+      name: '地址'
+      xpath: '/div/a'
+    _number:
+      name: '抖音号'
+      xpath: '//span[contains(text(),"抖音号")]/span'
+  user_name:
+    name: '主页用户名'
+    xpath: '//div[@data-e2e="user-info"]/div/h1'
+  private:
+    name: '私密账号'
+    xpath: '//p[text()="私密账号"]'
+  follow:
+    name: '关注'
+    xpath: '//div[@class="hLIm2dFu"]/button[1]'
+  message:
+    name: '私信'
+    xpath: '//div[@class="hLIm2dFu"]/button[2]'
+  message_flag:
+    name: '出现私信标志'
+    xpath: '//div[@data-e2e="im-entry"]'
+  message_input:
+    name: '私信输入'
+    xpath: '//div[@class="im-richtext-container"]'
+  video_list:
+    name: '视频列表'
+    xpath: '//div[@data-e2e="user-post-list"]/ul/li'
+    _url:
+      name: '地址'
+      xpath: '/div/a'
+    _cover:
+      name: '封面'
+      xpath: '/div/a/div/div[1]/img'
+    _like:
+      name: '点赞量'
+      xpath: '//span[@class="semi-icon semi-icon-default"]/following-sibling::span[1]'
+    _title:
+      name: '标题'
+      xpath: '/div/a/p'
+  text_video:
+    name: '作品数量'
+    xpath: '//div[@id="semiTabpost"]//span[@data-e2e="user-tab-count"]'
+  nothing:
+    name: '未发表视频'
+    xpath: '//p[contains(text(), "暂无内容")]'
+  no_more:
+    name: '没有更多'
+    xpath: '//div[text()="暂时没有更多了"]'
+

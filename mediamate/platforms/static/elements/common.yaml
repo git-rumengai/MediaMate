@@ -1,0 +1,30 @@
+login:
+  dy_base:
+    url: ''
+    name: '抖音主页登录'
+    xpath: '//div[@id="douyin-header-menuCt"]//a[@href="//www.douyin.com/user/self"]'
+  dy_creator:
+    url: ''
+    name: '抖音创作者页登录'
+    xpath: '//div[@id="header-avatar"]'
+  xhs_base:
+    url: ''
+    name: '小红书主页登录'
+    xpath: '//ul[@class="channel-list"]//li[@class="user side-bar-component"]'
+  xhs_creator:
+    name: '小红书创作者页登录'
+    xpath: '//div[contains(@class,"user-info")]'
+
+logout:
+  dy_base:
+    name: '抖音主页登出'
+    xpath: '//span[contains(@class, "semi-button-content")]/p[text()="登录"]'
+  dy_creator:
+    name: '抖音创作者页登出'
+    xpath: '//div[contains(@class, "login-card-double-header")]/div[text()="我是创作者"]'
+  xhs_base:
+    name: '小红书主页登出'
+    xpath: '//ul[@class="channel-list"]//button[@id="login-btn"]'
+  xhs_creator:
+    name: '小红书创作者页登出'
+    xpath: '//span[@class="btn-content" and text()=" 登 录 "]'

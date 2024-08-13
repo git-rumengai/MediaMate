@@ -1,0 +1,72 @@
+
+publish:
+  name: '发布笔记'
+  xpath: '//div[@class="publish-video"]/a'
+  video:
+    name: '上传视频'
+    xpath: '//span[@class="title" and text()="上传视频"]'
+    input:
+      name: '上传输入框'
+      xpath: '//div[@class="drag-over"]/input'
+    finish:
+      name: '视频上传完成'
+      xpath: '//div[@class="reUpload"]'
+  image:
+    name: '上传图文'
+    xpath: '//span[@class="title" and text()="上传图文"]'
+    input:
+      name: '上传输入框'
+      xpath: '//div[@class="drag-over"]/input'
+    loading:
+      name: '图片上传中'
+      xpath: '//div[@class="mask uploading"]'
+    add_more1:
+      name: '添加更多'
+      xpath: '//button[contains(@class,"upload-more")]'
+    add_more2:
+      name: '添加更多'
+      xpath: '//div[contains(@class, "entry")]/div[contains(@class, "tip") and contains(text(), "添加")]'
+  title:
+    name: '输入标题'
+    xpath: '//div[@class="input titleInput"]//input'
+  describe:
+    name: '输入描述'
+    xpath: '//div[@class="topic-container"]/p'
+    label_list:
+      name: '推荐标签列表'
+      xpath: '//div[@class="tribute-container"]/ul/li'
+  location:
+    name: '输入地点'
+    xpath: '//div[@class="address-box"]//input'
+    label_list:
+      name: '推荐地点列表'
+      xpath: '//div[@class="el-autocomplete-suggestion"]//ul/li'
+  permission:
+    name: '权限设置:公开'
+    xpath: '//span[contains(text(), "公开")]/parent::span/preceding-sibling::span'
+  time:
+    name: '发布时间:立即发布'
+    xpath: '//span[text()="立即发布"]/preceding-sibling::span'
+  sure:
+    name: '发布'
+    xpath: '//span[text()="发布"]'
+
+
+inspiration:
+  name: '笔记灵感'
+  xpath: '//div[text()="笔记灵感"]'
+  topic_list:
+    name: '主题列表'
+    xpath: '//div[@class="tabs"]/div/div'
+  content_list:
+    name: '内容列表'
+    xpath: '//div[@id="topicContent"]/div/div[3]/div/div'
+    _url:
+      name: '地址'
+      xpath: '/a'
+    _title:
+      name: '标题'
+      xpath: '/a/span/span'
+    _view:
+      name: '观看量'
+      xpath: '/a/div[1]/span[2]'
