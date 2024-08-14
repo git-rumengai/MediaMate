@@ -5,7 +5,7 @@ from playwright.async_api import Page, async_playwright, Playwright
 
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.log_manager import log_manager
-from mediamate.platforms.enums import LocatorType
+from mediamate.utils.enums import LocatorType
 from mediamate.platforms.dy.uploader import DyUploader
 from mediamate.platforms.dy.downloader import DyDownloader
 from mediamate.platforms.dy.operator import DyOperator

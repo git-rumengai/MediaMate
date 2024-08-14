@@ -1,7 +1,10 @@
 import requests
 import json
 from mediamate.tools.api_market.base import BaseMarket
+from mediamate.utils.log_manager import log_manager
 
+
+logger = log_manager.get_logger(__file__)
 
 
 class Chat(BaseMarket):
@@ -44,4 +47,5 @@ class Chat(BaseMarket):
         if response.status_code == 200:
             return json.loads(response.text)['output']
         else:
+            logger.error(f'获取结果出错: {response.text}')
             return ''

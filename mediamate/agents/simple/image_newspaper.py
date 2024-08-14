@@ -3,6 +3,7 @@ This module contains the ImageNewspaper class which is responsible for fetching 
 converting it to Markdown format, and saving it as images to various platforms.
 """
 import os
+from datetime import datetime, timedelta
 from typing import Tuple, List
 from mediamate.tools.google_news.client import GoogleNewsClient
 from mediamate.tools.converter.convert_to_image import ConvertToImage
@@ -38,6 +39,7 @@ class ImageNewspaper:
             'wait_minute': 3,
             'download': '否'
         }
+        self.md_news = []
 
     def init(self, title: str = '', topic: str = '', keywords: Tuple[str, ...] = ()):
         """
@@ -53,8 +55,8 @@ class ImageNewspaper:
                    describe: str = '',
                    labels: Tuple[str, ...] = (),
                    location: str = '',
-                   theme: str = '',
                    wait_minute: int = 3,
+                   theme: str = '',
                    download: str = '否'
                    ):
         """
@@ -64,12 +66,12 @@ class ImageNewspaper:
         self.media_config['desc'] = describe or self.media_config['desc']
         self.media_config['labels'] = list(labels) or self.media_config['labels']
         self.media_config['location'] = location or self.media_config['location']
-        self.media_config['theme'] = theme or self.media_config['theme']
         self.media_config['wait_minute'] = wait_minute or self.media_config['wait_minute']
+        self.media_config['theme'] = theme or self.media_config['theme']
         self.media_config['download'] = download or self.media_config['download']
         return self
 
-    def set_params(self, topic: str, query: str):
+    def set_params(self, topic: str, query: str, limit: int = 5):
         """
         Set parameters for the Google News client.
 
@@ -81,31 +83,39 @@ class ImageNewspaper:
             language='chinese simplified',
             topic=topic,
             query=query,
-            max_results=5
+            max_results=limit
         )
 
-    async def get_md_news(self) -> List[str]:
+    async def get_md_news(self, limit: int = 5, days: int = 7) -> List[str]:
         """
         Fetch news from Google News and convert it to Markdown format.
 
         :return: A list of Markdown formatted news.
         """
-        md_news = []
+        self.md_news = []
         for query in self.news_config['keywords']:
-            self.set_params(self.news_config['topic'], query)
+            self.set_params(self.news_config['topic'], query, limit=limit)
             news = self.google_news.export_news()
+            # 过滤并排序
             if news:
-                md_text = f"""### {self.news_config['title']}: {query} """
-                for inner, item in enumerate(news):
-                    md_text += f"""\n{inner + 1}. **{item['title']}**\n- 来源:{item['source']} \n- 发布日期:{item['publish_date']} """
-                md_news.append(md_text)
-        return md_news
+                recent_news = sorted(
+                    (item for item in news
+                     if
+                     datetime.strptime(item['publish_date'], '%a, %d %b %Y %H:%M:%S %Z') >= datetime.now() - timedelta(days=days)),
+                    key=lambda x: datetime.strptime(x['publish_date'], '%a, %d %b %Y %H:%M:%S %Z'),
+                    reverse=True
+                )
+                if recent_news:
+                    md_text = f"""# {self.news_config['title']}: {query}\n """
+                    for inner, item in enumerate(recent_news):
+                        md_text += f"""\n### {inner + 1}. **{item['title']}**\n- 来源:{item['source']} \n- 发布日期:{item['publish_date']} """
+                    self.md_news.append(md_text)
+        return self.md_news
 
     async def save_to_xhs(self):
         """
         Save the fetched news to the XHS platform as images.
         """
-        md_news = await self.get_md_news()
         media_config = config.MEDIA.get('media')
         if media_config:
             for xhs in media_config.get('xhs', []):
@@ -113,7 +123,7 @@ class ImageNewspaper:
                 platform = xhs['platform']
                 account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/image_news'
                 os.makedirs(account_dir, exist_ok=True)
-                for index, news in enumerate(md_news):
+                for index, news in enumerate(self.md_news):
                     await self.tti.markdown_to_image(news, f'{account_dir}/{index}.png')
                 self.metadata.init(f'{account_dir}/metadata.yaml')
                 await self.metadata.set('标题', self.media_config['title'])
@@ -127,7 +137,6 @@ class ImageNewspaper:
         """
         Save the fetched news to the DY platform as images.
         """
-        md_news = await self.get_md_news()
         media_config = config.MEDIA.get('media')
         if media_config:
             for dy in media_config.get('dy', []):
@@ -135,7 +144,7 @@ class ImageNewspaper:
                 platform = dy['platform']
                 account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/image_news'
                 os.makedirs(account_dir, exist_ok=True)
-                for index, news in enumerate(md_news):
+                for index, news in enumerate(self.md_news):
                     await self.tti.markdown_to_image(news, f'{account_dir}/{index}.png')
                 self.metadata.init(f'{account_dir}/metadata.yaml')
                 await self.metadata.set('标题', self.media_config['title'])

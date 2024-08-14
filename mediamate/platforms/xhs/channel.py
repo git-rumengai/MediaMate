@@ -58,6 +58,8 @@ class XhsChannel(BaseLocator):
         """ 进入个人页回复评论 """
         logger.info('进入个人页')
         await self.get_me_name(page)
+        close = await self.get_locator(page, 'explore close')
+
         note = await self.get_visible_locator(page, 'explore me note')
         await note.click()
         notes_list = await self.get_visible_locators(page, 'explore me note_list')
@@ -77,18 +79,20 @@ class XhsChannel(BaseLocator):
             dt = await self.get_child_visible_locator(detail, 'explore detail _datetime')
             dt_text = await dt.inner_text()
             logger.info(f'日期: {dt_text}')
-            date_pattern = r'(\d{2})-(\d{2})'
-            match = re.search(date_pattern, dt_text)
-            if not match:
-                continue
-            month, day = map(int, match.groups())
-            current_year = datetime.now().year
-            extracted_date = datetime(current_year, month, day)
-            today = datetime.now()
-            date_difference = extracted_date - today
-            if abs(date_difference.days) > days:
-                logger.info(f'日期距离今天超过{days}天')
-                break
+            if '今天' not in dt_text and '昨天' not in dt_text:
+                date_pattern = r'(\d{2})-(\d{2})'
+                match = re.search(date_pattern, dt_text)
+                if not match:
+                    logger.info('日期匹配错误, 忽略')
+                    continue
+                month, day = map(int, match.groups())
+                current_year = datetime.now().year
+                extracted_date = datetime(current_year, month, day)
+                today = datetime.now()
+                date_difference = extracted_date - today
+                if abs(date_difference.days) > days:
+                    logger.info(f'日期距离今天超过{days}天')
+                    break
 
             title = await self.get_child_visible_locator(detail, 'explore detail _title')
             title_text = await title.inner_text()
@@ -150,6 +154,9 @@ class XhsChannel(BaseLocator):
                     await comment_input.click()
                     await comment_input.fill(reply)
                     await page.keyboard.press('Enter')
+        # 关闭页面
+        if await close.is_visible():
+            await close.click()
         return page
 
     async def handle_note(self, page: Page,
@@ -162,11 +169,11 @@ class XhsChannel(BaseLocator):
         if '点赞' in actions:
             logger.info('点赞')
             like = await self.get_visible_locator(page, 'explore like')
-            # await like.click()
+            await like.click()
         if '收藏' in actions:
             logger.info('收藏')
             collect = await self.get_visible_locator(page, 'explore collect')
-            # await collect.click()
+            await collect.click()
         if '评论' in actions:
             logger.info('评论')
             title = await self.get_child_visible_locator(detail, 'explore detail _title')
@@ -245,7 +252,7 @@ class XhsChannel(BaseLocator):
                 await self.ensure_page(page)
             logger.info(f'进入主题: {topic_text}')
             sections = await section_list.all()
-            times = min(times, len(sections))
+            times = min(int(times), len(sections))
             for section in sections[:times]:
                 await self.ensure_close(page)
                 cover = await self.get_child_visible_locator(section, 'explore section_list _cover')
@@ -273,7 +280,7 @@ class XhsChannel(BaseLocator):
 
     async def channel_download(self, page: Page, data_dir: str, ids: Tuple[str, ...] = ()) -> Page:
         """ 下载指定用户笔记(不翻页) """
-        logger.info('进入发现页')
+        logger.info('下载指定用户笔记')
         steps = ('explore', )
         await self.ensure_step_page(page, steps)
 
@@ -331,7 +338,7 @@ class XhsChannel(BaseLocator):
                     return page
                 section_list = await self.get_visible_locators(page, 'search section_list')
                 section_list = await section_list.all()
-                times = min(times, len(section_list))
+                times = min(int(times), len(section_list))
                 if shuffle:
                     sections = random.sample(section_list, times)
                 else:

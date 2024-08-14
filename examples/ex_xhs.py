@@ -11,5 +11,7 @@ if __name__ == '__main__':
         xhs_config = media_config.get('xhs', [])
         for i in xhs_config:
             xhs_client.init(MediaLoginInfo(**i))
-            asyncio.run(xhs_client.start_base())
-            asyncio.run(xhs_client.start_creator())
+            if i.get('base'):
+                asyncio.run(xhs_client.start_base())
+            if i.get('creator'):
+                asyncio.run(xhs_client.start_creator())

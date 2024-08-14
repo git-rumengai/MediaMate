@@ -11,5 +11,7 @@ if __name__ == '__main__':
         dy_config = media_config.get('dy', [])
         for i in dy_config:
             dy_client.init(MediaLoginInfo(**i))
-            # asyncio.run(dy_client.start_base())
-            asyncio.run(dy_client.start_creator())
+            if i.get('base'):
+                asyncio.run(dy_client.start_base())
+            if i.get('creator'):
+                asyncio.run(dy_client.start_creator())

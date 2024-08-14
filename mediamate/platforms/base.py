@@ -14,7 +14,7 @@ from mediamate.utils.const import OPEN_URL_TIMEOUT, DY_BASE_URL, DY_CREATOR_URL,
 from mediamate.utils.functions import get_useragent, get_direct_proxy, proxy_to_playwright
 
 from mediamate.platforms.helpers import get_httpbin, check_cookies_valid, handle_dialog_accept
-from mediamate.platforms.enums import LocatorType, MediaType, PlatformType
+from mediamate.utils.enums import LocatorType, MediaType, PlatformType
 from mediamate.tools.api_market.chat import Chat
 from mediamate.platforms.helpers import message_reply
 from mediamate.tools.converter.convert_to_hash import ConvertToHash

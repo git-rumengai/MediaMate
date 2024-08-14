@@ -6,7 +6,7 @@ This module defines data models (schemas) used for data validation and serializa
 from pydantic import BaseModel, Field, field_validator, constr
 from typing import Tuple
 from mediamate.utils.const import DEFAULT_LOCATION
-from mediamate.platforms.enums import PlatformType
+from mediamate.utils.enums import PlatformType
 
 
 class MediaLoginInfo(BaseModel):

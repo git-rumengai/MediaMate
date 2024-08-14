@@ -6,7 +6,7 @@ from mediamate.utils.log_manager import log_manager
 
 logger = log_manager.get_logger(__file__)
 
-class ImageGenerationKolors(BaseMarket):
+class KolorsImageGenerater(BaseMarket):
     def __init__(self):
         super().__init__()
 

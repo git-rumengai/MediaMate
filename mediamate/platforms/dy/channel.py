@@ -136,7 +136,7 @@ class DyChannel(BaseLocator):
                         continue
                     lis.append(li)
 
-            times = min(times, len(lis))
+            times = min(int(times), len(lis))
             lis = lis[:times]
             for li in lis:
                 await li.click()
@@ -154,11 +154,11 @@ class DyChannel(BaseLocator):
         if '点赞' in actions:
             logger.info('点赞')
             like = await self.get_visible_locator(page, 'player like')
-            # await like.click()
+            await like.click()
         if '收藏' in actions:
             logger.info('收藏')
             collect = await self.get_visible_locator(page, 'player collect')
-            # await collect.click()
+            await collect.click()
         if '评论' in actions:
             logger.info('评论')
             comment = await self.get_visible_locator(page, 'player comment')
@@ -202,7 +202,7 @@ class DyChannel(BaseLocator):
                 await page.keyboard.type(f'@{sb}')
                 await self.get_visible_locators(page, 'player comment mention_list')
                 await page.keyboard.press('Enter')
-            # await page.keyboard.press('Enter')
+            await page.keyboard.press('Enter')
             logger.info(f'评论内容: {reply}')
             close = await self.get_visible_locator(page, 'player comment close')
             await close.click()
@@ -318,7 +318,7 @@ class DyChannel(BaseLocator):
                     continue
                 video_list = await self.get_visible_locators(page, 'search video_list')
                 video_list = await video_list.all()
-                times = min(times, len(video_list))
+                times = min(int(times), len(video_list))
                 if shuffle:
                     video_list = random.sample(video_list, times)
                 else:
@@ -337,18 +337,21 @@ class DyChannel(BaseLocator):
             logger.info('私密账号, 忽略')
             return page
         follow = await self.get_visible_locator(page, 'search follow')
-        message = await self.get_visible_locator(page, 'search message')
         follow_text = await follow.inner_text()
-        if follow_text == '关注':
+        if follow_text.strip() == '关注':
             await follow.click()
+        elif follow_text.strip() == '编辑资料':
+            logger.info('进入了自己的页面')
+            return page
         else:
             logger.info(f'用户已经被关注...')
-        message_flag = await self.get_visible_locator(page, 'search message_flag')
+        message = await self.get_visible_locator(page, 'search message')
+        await self.get_visible_locator(page, 'search message_flag')
         await message.click()
         message_input = await self.get_visible_locator(page, 'search message_input')
         await message_input.click()
         await page.keyboard.type(msg)
-        # await page.keyboard.press('Enter')
+        await page.keyboard.press('Enter')
         await asyncio.sleep(0.3)
         return page
 
@@ -384,6 +387,12 @@ class DyChannel(BaseLocator):
             for comments in comments_[:batch]:
                 author = await self.get_child_locator(comments, 'player comment comments_list _author')
                 content = await self.get_child_locator(comments, 'player comment comments_list _content')
+                tag = await self.get_child_locator(comments, 'player comment comments_list _tag')
+                if await tag.is_visible():
+                    tag_text = await tag.inner_text()
+                    if tag_text.strip() == '朋友':
+                        logger.info('已经是朋友了')
+                        continue
                 if await author.is_visible() and await content.is_visible():
                     author_text = await author.inner_text()
                     content_text = await content.inner_text()

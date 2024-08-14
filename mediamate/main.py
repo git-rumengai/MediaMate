@@ -21,8 +21,10 @@ async def run_xhs():
         xhs_config = media_config.get('xhs', [])
         for i in xhs_config:
             xhs_client.init(MediaLoginInfo(**i))
-            await xhs_client.start_base()
-            await xhs_client.start_creator()
+            if i.get('base'):
+                await xhs_client.start_base()
+            if i.get('creator'):
+                await xhs_client.start_creator()
 
 async def run_dy():
     """
@@ -37,8 +39,10 @@ async def run_dy():
         dy_config = media_config.get('dy', [])
         for i in dy_config:
             dy_client.init(MediaLoginInfo(**i))
-            await dy_client.start_base()
-            await dy_client.start_creator()
+            if i.get('base'):
+                await dy_client.start_base()
+            if i.get('creator'):
+                await dy_client.start_creator()
 
 async def run_config():
     """

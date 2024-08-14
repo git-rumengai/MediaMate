@@ -3,6 +3,9 @@ from typing import Optional
 from mediamate.tools.proxy import proxy_pool
 from mediamate.config import config
 from mediamate.utils.log_manager import log_manager
+from mediamate.utils.enums import MediaType
+
+
 
 logger = log_manager.get_logger(__file__)
 
@@ -47,6 +50,31 @@ def get_useragent(pc: bool = True):
     pf = 'pc' if pc else 'mobile'
     user_agent = UserAgent(browsers='chrome', os='windows', platforms=pf)
     return user_agent.chrome
+
+def get_media_type(filename: str) -> MediaType:
+    """  """
+    # 定义常见的文本文件扩展名
+    text_extensions = {'txt', 'doc', 'docx', 'pdf', 'md', 'rtf', 'html', 'htm', 'xml', 'csv'}
+    # 定义常见的语音文件扩展名
+    audio_extensions = {'mp3', 'wav', 'aac', 'flac', 'm4a', 'ogg', 'wma'}
+    # 定义常见的视频文件扩展名
+    video_extensions = {'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'mpeg', 'mpg', '3gp', 'webm'}
+    # 定义常见的图片文件扩展名
+    image_extensions = {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'svg', 'webp'}
+
+    # 获取文件的扩展名
+    file_extension = filename.split('.')[-1].lower()
+
+    if file_extension in text_extensions:
+        return MediaType.TEXT
+    elif file_extension in audio_extensions:
+        return MediaType.AUDIO
+    elif file_extension in video_extensions:
+        return MediaType.VIDEO
+    elif file_extension in image_extensions:
+        return MediaType.IMAGE
+    else:
+        return MediaType.UNKNOW
 
 
 if __name__ == '__main__':

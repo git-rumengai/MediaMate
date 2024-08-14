@@ -125,6 +125,9 @@ player:
       _author:
         name: '用户'
         xpath: '/div/div[2]/div[1]//div[@class="ax6MlHvK"]'
+      _tag:
+        name: '标签'
+        xpath: '/div/div[2]/div[1]//span[contains(@class,"comment-item-tag-text")]'
       _content:
         name: '评论内容'
         xpath: '/div/div[2]/div[1]//span[@class="j5WZzJdp"]'
@@ -159,10 +162,10 @@ search:
     xpath: '//p[text()="私密账号"]'
   follow:
     name: '关注'
-    xpath: '//div[@class="hLIm2dFu"]/button[1]'
+    xpath: '//div[@data-e2e="user-detail"]/div/div[2]/div[3]/div[3]/div/button[1]'
   message:
     name: '私信'
-    xpath: '//div[@class="hLIm2dFu"]/button[2]'
+    xpath: '//div[@data-e2e="user-detail"]/div/div[2]/div[3]/div[3]/div/button[2]'
   message_flag:
     name: '出现私信标志'
     xpath: '//div[@data-e2e="im-entry"]'

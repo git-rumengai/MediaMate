@@ -5,7 +5,7 @@ from typing import Optional
 from playwright.async_api import Page, async_playwright, Playwright
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.log_manager import log_manager
-from mediamate.platforms.enums import LocatorType
+from mediamate.utils.enums import LocatorType
 from mediamate.platforms.xhs.uploader import XhsUploader
 from mediamate.platforms.xhs.downloader import XhsDownloader
 from mediamate.platforms.xhs.channel import XhsChannel

@@ -13,4 +13,7 @@ class LocatorType(Enum):
 
 class MediaType(Enum):
     VIDEO = 'video'
+    AUDIO = 'audio'
     IMAGE = 'image'
+    TEXT = 'text'
+    UNKNOW = 'unknow'

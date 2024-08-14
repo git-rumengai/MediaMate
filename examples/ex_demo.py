@@ -44,8 +44,8 @@ async def get_photo():
                 file.write(response.content)
 
             metadata.init(f'{data_dir}/metadata.yaml')
-            await metadata.set('标题', '我为RuMengAI代言')
-            await metadata.set('描述', '这只是个测试')
+            await metadata.set('标题', '自动上传作品，代码已经开源')
+            await metadata.set('描述', 'GitHub已开源')
             await metadata.set('标签', ['AI社交'])
             await metadata.set('地点', '上海')
 

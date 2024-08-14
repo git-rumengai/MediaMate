@@ -7,7 +7,7 @@ import requests
 from typing import Tuple
 
 from mediamate.tools.api_market.chat import Chat
-from mediamate.tools.api_market.images import ImageGenerationKolors
+from mediamate.tools.api_market.generator import KolorsImageGenerater
 from mediamate.config import config, ConfigManager
 from mediamate.utils.log_manager import log_manager
 
@@ -20,9 +20,9 @@ class MascotGPT:
     The MascotGPT class handles generating mascot designs using AI and saving the generated mascots to various platforms.
     """
     def __init__(self):
-        self.api_key = config.get('302__APIKEY')
-        self.chat = Chat().init(api_key=self.api_key, model='deepseek-chat')
-        self.kolors = ImageGenerationKolors().init(api_key=self.api_key)
+        api_key = config.get('302__APIKEY')
+        self.chat = Chat().init(api_key=api_key, model='deepseek-chat')
+        self.kolors = KolorsImageGenerater().init(api_key=api_key)
         self.metadata = ConfigManager()
 
         self.prompt = ''
@@ -34,6 +34,8 @@ class MascotGPT:
             'wait_minute': 3,
             'download': '否'
         }
+        self.text = ''
+        self.image = {}
 
     def init(self, prompt: str):
         """
@@ -42,13 +44,14 @@ class MascotGPT:
         :param prompt: The input prompt for the AI model.
         """
         self.prompt = prompt
+        return self
 
     def init_media(self,
                    title: str = '',
                    labels: Tuple[str, ...] = (),
                    location: str = '',
-                   theme: str = '',
                    wait_minute: int = 3,
+                   theme: str = '',
                    download: str = '否'
                    ):
         """
@@ -57,16 +60,19 @@ class MascotGPT:
         :param title: The title of the media.
         :param labels: The labels for the media.
         :param location: The location for the media.
-        :param theme: The theme for the media.
         :param wait_minute: The wait time in minutes.
+        :param theme: The theme for the media.
         :param download: Whether the media can be downloaded.
         """
         self.media_config['title'] = title
         self.media_config['labels'] = list(labels)
         self.media_config['location'] = location or self.media_config['location']
-        self.media_config['theme'] = theme or self.media_config['theme']
         self.media_config['wait_minute'] = wait_minute or self.media_config['wait_minute']
+        self.media_config['theme'] = theme or self.media_config['theme']
         self.media_config['download'] = download
+
+        self.text = self.get_text(self.prompt)
+        self.image = self.get_image(self.text)
         return self
 
     def get_text(self, message: str) -> str:
@@ -78,7 +84,7 @@ class MascotGPT:
         """
         return self.chat.get_response(message)
 
-    def get_image(self, prompt: str):
+    def get_image(self, prompt: str) -> {}:
         """
         Get the image response from the AI image generation model.
 
@@ -94,10 +100,7 @@ class MascotGPT:
 
         :param seed: The seed for random selection of brand, style, and background color.
         """
-        text = self.get_text(self.prompt)
-        image = self.get_image(text)
-
-        image_url = image[0]['url']
+        image_url = self.image[0]['url']
         media_config = config.MEDIA.get('media')
         if media_config:
             for xhs in media_config.get('xhs', []):
@@ -110,7 +113,7 @@ class MascotGPT:
                     file.write(response.content)
                 self.metadata.init(f'{account_dir}/metadata.yaml')
                 await self.metadata.set('标题', self.media_config['title'])
-                await self.metadata.set('描述', text)
+                await self.metadata.set('描述', self.text)
                 await self.metadata.set('标签', self.media_config['labels'])
                 await self.metadata.set('地点', self.media_config['location'])
                 logger.info(f'数据已保存至: {account_dir}')
@@ -121,10 +124,7 @@ class MascotGPT:
 
         :param seed: The seed for random selection of brand, style, and background color.
         """
-        text = self.get_text(self.prompt)
-        image = self.get_image(text)
-
-        image_url = image[0]['url']
+        image_url = self.image[0]['url']
         media_config = config.MEDIA.get('media')
         if media_config:
             for dy in media_config.get('dy', []):
@@ -137,7 +137,7 @@ class MascotGPT:
                     file.write(response.content)
                 self.metadata.init(f'{account_dir}/metadata.yaml')
                 await self.metadata.set('标题', self.media_config['title'])
-                await self.metadata.set('描述', text)
+                await self.metadata.set('描述', self.text)
                 await self.metadata.set('标签', self.media_config['labels'])
                 await self.metadata.set('地点', self.media_config['location'])
                 await self.metadata.set('贴纸', self.media_config['theme'])

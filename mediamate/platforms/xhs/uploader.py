@@ -9,7 +9,7 @@ from mediamate.utils.const import OPEN_URL_TIMEOUT
 from mediamate.utils.log_manager import log_manager
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.config import config, ConfigManager
-from mediamate.platforms.enums import MediaType
+from mediamate.utils.enums import MediaType
 from mediamate.platforms.base import BaseLocator
 
 
