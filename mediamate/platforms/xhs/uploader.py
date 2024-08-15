@@ -113,6 +113,7 @@ class XhsUploader(BaseLocator):
             await image_input.set_input_files(file)
 
             logger.info(f'一共要上传{len(image_files)}张图片, 首张图片上传成功: {file}')
+            await asyncio.sleep(0.1)
             for index, file in enumerate(image_files[1:]):
                 await asyncio.sleep(random.random()*0.3)
                 add_more1 = await self.get_locator(page, 'publish image add_more1')
@@ -166,6 +167,7 @@ class XhsUploader(BaseLocator):
                     await asyncio.sleep(0.1)
                     label_list = await label_list.all()
                     await label_list[0].click()
+                    await page.keyboard.type(' ')
                     await page.keyboard.press('End')
             else:
                 logger.info('标签为空')
@@ -185,6 +187,7 @@ class XhsUploader(BaseLocator):
             label_list = await self.get_visible_locators(page, 'publish location label_list')
             label_list = await label_list.all()
             await label_list[0].click()
+            await label_list[0].wait_for(state='hidden')
         else:
             logger.info('不设置地点')
         return page
@@ -206,9 +209,21 @@ class XhsUploader(BaseLocator):
     async def click_publish(self, page: Page) -> Optional[Page]:
         """  """
         logger.info('点击发布')
-        logger.info('设置发布时间: 立即发布')
         sure = await self.get_visible_locator(page, 'publish sure')
         await sure.click()
+        await asyncio.sleep(0.1)
+        # 图片不一定上传成功
+        sure_loading = await self.get_locator(page, 'publish sure_loading')
+        wait_sec = OPEN_URL_TIMEOUT / 1000
+        while await sure.is_visible():
+            if await sure.is_enabled():
+                await sure.click()
+            await asyncio.sleep(1)
+            if await sure_loading.is_visible():
+                logger.info('上传中...')
+            wait_sec -= 1
+            if wait_sec < 1:
+                raise TimeoutError('发表失败...')
         return page
 
 

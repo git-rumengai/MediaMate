@@ -50,6 +50,9 @@ publish:
   sure:
     name: '发布'
     xpath: '//span[text()="发布"]'
+  sure_loading:
+    name: '图片上传中'
+    xpath: '//div[contains(text(),"上传中")]'
 
 
 inspiration:

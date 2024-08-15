@@ -15,8 +15,8 @@ logger = log_manager.get_logger(__file__)
 
 
 class ResponseModel(BaseModel):
-    title: constr(strip_whitespace=True, min_length=1) = Field(..., description="标题要有吸引力")
-    description: constr(strip_whitespace=True, max_length=100) = Field(..., description="简洁明了的描述，内容不超过200字符")
+    title: constr(strip_whitespace=True, min_length=1, max_length=18) = Field(..., description="标题要有吸引力")
+    description: constr(strip_whitespace=True, max_length=200) = Field(..., description="简洁明了的描述，内容不超过200字符")
     keywords: List[constr(strip_whitespace=True, min_length=1, max_length=20)] = Field(..., description="关键词列表，不超过3个")
 
     @field_validator('keywords')

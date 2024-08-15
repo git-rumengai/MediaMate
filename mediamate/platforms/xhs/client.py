@@ -12,6 +12,7 @@ from mediamate.platforms.xhs.channel import XhsChannel
 from mediamate.platforms.base import BaseClient
 from mediamate.config import config
 from mediamate.utils.const import DEFAULT_REPLY
+from mediamate.utils.functions import screenshot
 
 
 logger = log_manager.get_logger(__file__)
@@ -137,19 +138,21 @@ class XhsClient(BaseClient):
         labels = self.uploader.metadata_config.get('标签')
         location = self.uploader.metadata_config.get('地点')
         wait_minute = self.uploader.metadata_config.get('图片超时报错', 3)
-        try:
-            page = await self.uploader.click_upload_image(page, wait_minute)
-            page = await self.uploader.write_title(page, title)
-            page = await self.uploader.write_describe(page, describe, labels)
-            page = await self.uploader.set_location(page, location)
-            page = await self.uploader.set_permission(page)
-            page = await self.uploader.set_time(page)
-            page = await self.uploader.click_publish(page)
-            logger.info('图文发布成功, 5s自动返回')
-            await asyncio.sleep(5)
-            return page
-        except Exception as e:
-            logger.error(f'上传图文报错: {e}')
+
+        page = await self.uploader.click_upload_image(page, wait_minute)
+        page = await self.uploader.write_title(page, title)
+        page = await self.uploader.write_describe(page, describe, labels)
+        page = await self.uploader.set_location(page, location)
+        page = await self.uploader.set_permission(page)
+        page = await self.uploader.set_time(page)
+        page = await self.uploader.click_publish(page)
+
+        await screenshot(page, f'{config.DATA_DIR}/2.png')
+        logger.info('图文发布成功, 5s自动返回')
+        await asyncio.sleep(5)
+        await screenshot(page, f'{config.DATA_DIR}/1.png')
+
+        return page
 
     async def upload_video(self, page: Page) -> Optional[Page]:
         """  """
@@ -158,19 +161,17 @@ class XhsClient(BaseClient):
         labels = self.uploader.metadata_config.get('标签')
         location = self.uploader.metadata_config.get('地点')
         wait_minute = self.uploader.metadata_config.get('视频超时报错', 10)
-        try:
-            page = await self.uploader.click_upload_video(page, wait_minute)
-            page = await self.uploader.write_title(page, title)
-            page = await self.uploader.write_describe(page, describe, labels)
-            page = await self.uploader.set_location(page, location)
-            page = await self.uploader.set_permission(page)
-            page = await self.uploader.set_time(page)
-            page = await self.uploader.click_publish(page)
-            logger.info('视频发布成功, 5s自动返回')
-            await asyncio.sleep(5)
-            return page
-        except Exception as e:
-            logger.error(f'上传视频报错: {e}')
+
+        page = await self.uploader.click_upload_video(page, wait_minute)
+        page = await self.uploader.write_title(page, title)
+        page = await self.uploader.write_describe(page, describe, labels)
+        page = await self.uploader.set_location(page, location)
+        page = await self.uploader.set_permission(page)
+        page = await self.uploader.set_time(page)
+        page = await self.uploader.click_publish(page)
+        logger.info('视频发布成功, 5s自动返回')
+        await asyncio.sleep(5)
+        return page
 
 
 __all__ = ['XhsClient']

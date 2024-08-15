@@ -1,5 +1,9 @@
 from fake_useragent import UserAgent
 from typing import Optional
+import io
+from playwright.async_api import Page
+from PIL import Image
+
 from mediamate.tools.proxy import proxy_pool
 from mediamate.config import config
 from mediamate.utils.log_manager import log_manager
@@ -75,6 +79,14 @@ def get_media_type(filename: str) -> MediaType:
         return MediaType.IMAGE
     else:
         return MediaType.UNKNOW
+
+
+async def screenshot(page: Page, output_image_path: str):
+    """ 保存屏幕截图 """
+    image = await page.screenshot(full_page=True)
+    with Image.open(io.BytesIO(image)) as img:
+        img.save(output_image_path)
+
 
 
 if __name__ == '__main__':

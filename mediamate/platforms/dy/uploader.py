@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import glob
@@ -212,7 +213,7 @@ class DyUploader(BaseUploader):
                 await input_location.clear()
             else:
                 await locator.click()
-                await input_location.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+                await locator.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
         else:
             logger.info('不设置地点')
         return page
@@ -235,9 +236,9 @@ class DyUploader(BaseUploader):
             await click_theme.click()
             input_theme = await self.get_visible_locator(page, 'upload click_theme input_theme')
             await input_theme.fill(theme)
-
             follow_counts = []
             theme_list = await self.get_visible_locators(page, 'upload click_theme theme_list')
+            await asyncio.sleep(0.1)
             theme_list = await theme_list.all()
             for index, theme in enumerate(theme_list):
                 content = await self.get_child_visible_locator(theme, 'upload click_theme theme_list _content')
@@ -249,6 +250,7 @@ class DyUploader(BaseUploader):
             max_followed_theme = max(follow_counts, key=lambda x: x[0])[1]
             # 点击最大跟拍数的元素
             await max_followed_theme.click()
+            await max_followed_theme.wait_for(state='hidden')
         else:
             logger.info('不设置贴纸')
         return page

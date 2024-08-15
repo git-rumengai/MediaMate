@@ -8,6 +8,7 @@ from mediamate.utils.log_manager import log_manager
 
 logger = log_manager.get_logger(__name__)
 
+
 async def run_xhs():
     """
     Initialize and run the XHS client for base and creator functionalities.
@@ -25,6 +26,7 @@ async def run_xhs():
                 await xhs_client.start_base()
             if i.get('creator'):
                 await xhs_client.start_creator()
+
 
 async def run_dy():
     """

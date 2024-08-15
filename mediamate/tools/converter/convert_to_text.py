@@ -137,7 +137,7 @@ if __name__ == '__main__':
     ctt = ConvertToText()
     ctt.init(image_recognizer, audio_recognizer)
 
-    # filename = r'C:\Users\Admin\Desktop\1.png'
+    # filename = r'C:\Users\Admin\Desktop\2.png'
     # result = ctt.read_file(filename)
     # print(result)
     #

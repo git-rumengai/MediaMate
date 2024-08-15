@@ -1,3 +1,4 @@
+import os
 import hashlib
 from typing import List, Union
 
@@ -10,7 +11,7 @@ class ConvertToHash:
         """Hash the content of a file using SHA-256."""
         sha256 = hashlib.sha256()
         try:
-            sha256.update(file_name.encode('utf-8'))
+            sha256.update(os.path.basename(file_name).encode('utf-8'))
             with open(file_name, 'rb') as file:
                 while chunk := file.read(8192):
                     sha256.update(chunk)

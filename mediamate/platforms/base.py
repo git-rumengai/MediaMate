@@ -222,7 +222,6 @@ class BaseClient(ABC):
                 logger.info(f'发表文件路径: {full_path}')
                 media_type, files = self.uploader.check_upload_type()
                 saved_files = self.browser_config.get('published', [])
-                files = [os.path.basename(i) for i in files]
                 hash_files = self.convert_to_hash.process_input(files)
                 if any(hash_file in saved_files for hash_file in hash_files):
                     logger.info(f'存在已发布过的文件')

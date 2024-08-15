@@ -13,7 +13,7 @@ PROMPT = """
 品牌：{brand}
 我希望的风格是：{style}
 背景颜色是：{bg_color}
-请给出您的设计方案，使用绘画专业术语，语言简洁明了。输出结果以“这是我为{brand}设计的吉祥物\n...”开头。
+请给出您的设计方案，使用绘画专业术语，长度不超过200字。输出结果以“这是我为{brand}设计的吉祥物\n...”开头。
 """
 
 BRANDS = ['华为', '小米', '阿里巴巴', '腾讯', '百度', '美团', '京东', '字节跳动', 'VIVO', 'OPPO', '联想', '格力',
@@ -40,7 +40,7 @@ async def get_mascot(seed: int=1):
     mascot_gpt = MascotGPT()
     mascot_gpt.init(prompt)
     # 发表图文的标题, 标签和地点
-    media_title = f'这是利用AI自动生成并上传的图文模板，你觉得怎么样呢？（代码已开源）'
+    media_title = f'AI生成并自动上传，怎么样？开源'
     media_labels = ('RuMengAI', '吉祥物', '科技', brand)
     media_location = '上海'
     # 上传图片时最长等待时间

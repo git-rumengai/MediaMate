@@ -17,7 +17,7 @@ async def get_image_news():
 
     # 发布图文时的参数配置
     # 发布标题, 描述, 标签, 地点
-    media_title = '这是AI自动生成并上传的新闻模板，你觉得怎么样呢？（代码已开源）'
+    media_title = 'AI生成并自动上传，怎么样？开源'
     media_desc = '科技新闻报道'
     media_labels = ('RuMengAI', '新闻', '科技')
     media_location = '上海'
