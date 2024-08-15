@@ -9,7 +9,7 @@ class BaseMarket(ABC):
         self.model = ''
 
     @abstractmethod
-    def init(self, api_key, url: str='', model: str=''):
+    def init(self, api_key, url: str = '', model: str = ''):
         self.api_key = api_key
         self.url = url
         self.model = model

@@ -11,7 +11,7 @@ class ImageRecognizer(BaseMarket):
     def __init__(self, ):
        super().__init__()
 
-    def init(self, api_key, url: str='', model: str=''):
+    def init(self, api_key, url: str = '', model: str = 'gpt-4o'):
         url = url or 'https://api.302.ai/v1/chat/completions'
         model = model or 'gpt-4o-mini'
         super().init(api_key, url, model)
@@ -23,7 +23,7 @@ class ImageRecognizer(BaseMarket):
     def get_payload(self, image_url: str) -> str:
        """  """
        return json.dumps({
-           "model": "gpt-4o",
+           "model": self.model,
            "stream": False,
            "messages": [
               {

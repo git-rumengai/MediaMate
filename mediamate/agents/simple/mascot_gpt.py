@@ -7,7 +7,7 @@ import requests
 from typing import Tuple
 
 from mediamate.tools.api_market.chat import Chat
-from mediamate.tools.api_market.generator import KolorsImageGenerater
+from mediamate.tools.api_market.generator import KolorsImageGenerator, DallesImageGenerator
 from mediamate.config import config, ConfigManager
 from mediamate.utils.log_manager import log_manager
 
@@ -22,7 +22,7 @@ class MascotGPT:
     def __init__(self):
         api_key = config.get('302__APIKEY')
         self.chat = Chat().init(api_key=api_key, model='deepseek-chat')
-        self.kolors = KolorsImageGenerater().init(api_key=api_key)
+        self.image_generator = DallesImageGenerator().init(api_key=api_key)
         self.metadata = ConfigManager()
 
         self.prompt = ''
@@ -84,14 +84,14 @@ class MascotGPT:
         """
         return self.chat.get_response(message)
 
-    def get_image(self, prompt: str) -> {}:
+    def get_image(self, prompt: str) -> str:
         """
         Get the image response from the AI image generation model.
 
         :param prompt: The input prompt for the AI image generation model.
         :return: The image response from the AI image generation model.
         """
-        response = self.kolors.get_response(prompt)
+        response = self.image_generator.get_response(prompt)
         return response
 
     async def save_to_xhs(self, seed: int = 3):

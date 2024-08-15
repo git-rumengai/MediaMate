@@ -51,6 +51,7 @@ IMAGES = [
 
 VIDEO = 'https://www.douyin.com/aweme/v1/play/?file_id=d35918c6c3554907982cb23c6a9d8059&is_play_url=1&line=0&sign=6c432f512bbc4e0fa7a420cf1a8d6fa3&source=PackSourceEnum_PUBLISH&uifid=3c3e9d4a635845249e00419877a3730e2149197a63ddb1d8525033ea2b3354c2fcb74766499cf3c6f79cb8aaebb8ad2f238d9adf46a107ca2cab64707cde3df42bbe0ddf12d441dcd90a0b8277bb88cf9e8e238a05cdb6085c040435f1bde20f7b466e80aa73aecfc457e3d188b457bcf2ea3af492b50f2cebfa4fc6dc1381a91632e2ce795d99aa474d7ce90f615e1189052baa9b1af5df6f12fb2b62740db6&video_id=v0200fg10000cqpn837og65jf3ve9fbg&aid=6383'
 
+
 def download_media():
     """ 下载示例内容, 组图保存到xhs, 视频保存到dy """
     media_config = config.MEDIA.get('media')
@@ -75,6 +76,7 @@ def download_media():
             with open(f'{account_dir}/1.mp4', 'wb') as file:
                 file.write(response.content)
             break
+
 
 async def get_media_gpt():
     """  """

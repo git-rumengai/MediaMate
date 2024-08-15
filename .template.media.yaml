@@ -43,7 +43,7 @@ media:
       proxy: ''   # 代理地址
       location: [121.522331, 31.236907]   # 浏览器经纬度, 这个是上海
 
-      creator:                      # 配置: 小红书创作者中心
+      creator:                      # 配置: 抖音创作者中心
         upload: True                # 是否自动上传视频/图文
         downloader:                 # 配置: 下载创作者中心的数据
           manage: True              # 下载作品管理页数据

@@ -44,6 +44,7 @@ class Chat(BaseMarket):
             headers=self.get_headers(),
             data=self.get_payload(message)
         )
+        logger.info(response.text)
         if response.status_code == 200:
             return json.loads(response.text)['output']
         else:

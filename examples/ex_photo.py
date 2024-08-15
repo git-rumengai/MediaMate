@@ -32,7 +32,7 @@ async def get_photo():
     # 发布抖音参数: 贴纸, 是否允许保存
     media_theme = '宠物'
     media_download = '否'
-    photo_gpt.init_media(media_title, media_labels, media_location, media_theme, media_wait_minute, media_download)
+    photo_gpt.init_media(media_title, media_labels, media_location, media_wait_minute, media_theme, media_download)
 
 
     await photo_gpt.save_to_xhs()
