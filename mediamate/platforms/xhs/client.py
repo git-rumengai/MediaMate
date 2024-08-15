@@ -12,7 +12,6 @@ from mediamate.platforms.xhs.channel import XhsChannel
 from mediamate.platforms.base import BaseClient
 from mediamate.config import config
 from mediamate.utils.const import DEFAULT_REPLY
-from mediamate.utils.functions import screenshot
 
 
 logger = log_manager.get_logger(__file__)
@@ -146,11 +145,8 @@ class XhsClient(BaseClient):
         page = await self.uploader.set_permission(page)
         page = await self.uploader.set_time(page)
         page = await self.uploader.click_publish(page)
-
-        await screenshot(page, f'{config.DATA_DIR}/2.png')
         logger.info('图文发布成功, 5s自动返回')
         await asyncio.sleep(5)
-        await screenshot(page, f'{config.DATA_DIR}/1.png')
 
         return page
 
