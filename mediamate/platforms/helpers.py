@@ -132,4 +132,5 @@ async def message_reply(prompt: str, messages: List[Dict[str, str]], chat_api: O
         reply = chat_api.get_response(prompt)
     else:
         reply = prompt if prompt else DEFAULT_REPLY
-    return reply
+    # 抖音评论有换行符会直接确认
+    return reply.replace('\n', '   ')

@@ -108,21 +108,25 @@ class DyChannel(BaseLocator):
             if item == '挑战榜':
                 rank = await self.get_visible_locator(page, 'discover challenge')
                 await rank.click()
+                await asyncio.sleep(0.1)
                 ul = await self.get_visible_locators(page, 'discover hot_list')
                 lis = await ul.all()
             elif item == '热榜':
                 rank = await self.get_visible_locator(page, 'discover hot')
                 await rank.click()
+                await asyncio.sleep(0.1)
                 ul = await self.get_visible_locators(page, 'discover hot_list')
                 lis = await ul.all()
             elif item == '娱乐榜':
                 rank = await self.get_visible_locator(page, 'discover game')
                 await rank.click()
+                await asyncio.sleep(0.1)
                 ul = await self.get_visible_locators(page, 'discover hot_list')
                 lis = await ul.all()
             elif item == '社会榜':
                 rank = await self.get_visible_locator(page, 'discover social')
                 await rank.click()
+                await asyncio.sleep(0.1)
                 ul = await self.get_visible_locators(page, 'discover hot_list')
                 lis = await ul.all()
             else:
@@ -166,6 +170,7 @@ class DyChannel(BaseLocator):
             title = await self.get_visible_locator(page, 'player title')
             title_text = await title.inner_text()
             messages = [{'title': title_text,}]
+            logger.info(f'标题: {title_text}')
             if '抢首评' not in await comment.inner_text():
                 text_comment = await self.get_visible_locator(page, 'player comment text_comment')
                 text_comment_text = await text_comment.inner_text()
@@ -189,8 +194,9 @@ class DyChannel(BaseLocator):
                     if await author.is_visible() and await content.is_visible():
                         author_text = await author.inner_text()
                         content_text = await content.inner_text()
+                        logger.info(f'用户: {author_text}. 评论: {content_text}')
                         if content_text.strip():
-                            message = {f'user_{author_text}': content_text.strip()}
+                            message = {f'参考评论: ': content_text.strip()}
                             messages.append(message)
 
             reply = await callback(messages=messages)

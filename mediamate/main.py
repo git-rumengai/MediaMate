@@ -44,6 +44,7 @@ async def run_dy():
             if i.get('creator'):
                 await dy_client.start_creator()
 
+
 async def run_config():
     """
     Asynchronously run the configuration for both XHS and DY clients.
@@ -52,7 +53,7 @@ async def run_config():
     that may occur.
     """
     try:
-        await run_xhs()
+        # await run_xhs()
         await run_dy()
     except Exception as e:
         logger.error(f"An error occurred: {e}")

@@ -14,7 +14,6 @@ from mediamate.utils.enums import MediaType
 logger = log_manager.get_logger(__file__)
 
 
-
 class ResponseModel(BaseModel):
     title: constr(strip_whitespace=True, min_length=1) = Field(..., description="标题要有吸引力")
     description: constr(strip_whitespace=True, max_length=100) = Field(..., description="简洁明了的描述，内容不超过200字符")

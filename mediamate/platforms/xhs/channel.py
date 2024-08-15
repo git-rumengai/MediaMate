@@ -79,7 +79,7 @@ class XhsChannel(BaseLocator):
             dt = await self.get_child_visible_locator(detail, 'explore detail _datetime')
             dt_text = await dt.inner_text()
             logger.info(f'日期: {dt_text}')
-            if '今天' not in dt_text and '昨天' not in dt_text:
+            if '今天' not in dt_text and '昨天' not in dt_text and '天前' not in dt_text:
                 date_pattern = r'(\d{2})-(\d{2})'
                 match = re.search(date_pattern, dt_text)
                 if not match:
@@ -139,10 +139,9 @@ class XhsChannel(BaseLocator):
                         for inner_comment in inner_comments:
                             inner_author = await self.get_child_visible_locator(inner_comment, 'explore detail _comments_list _inner_list _author')
                             inner_author_text = await inner_author.inner_text()
-                            logger.info(f'回复作者: {inner_author_text}')
                             inner_content = await self.get_child_visible_locator(inner_comment, 'explore detail _comments_list _inner_list _content')
                             inner_content_text = await inner_content.inner_text()
-                            logger.info(f'回复评论: {inner_content_text}')
+                            logger.info(f'回复作者: {inner_author_text}. 回复评论: {inner_content_text}')
                             messages.append({f'user_{inner_author_text}': inner_content_text})
                     if not messages:
                         continue
@@ -176,22 +175,27 @@ class XhsChannel(BaseLocator):
             await collect.click()
         if '评论' in actions:
             logger.info('评论')
-            title = await self.get_child_visible_locator(detail, 'explore detail _title')
-            title_text = await title.inner_text()
-            logger.info(f'标题: {title_text}')
             desc = await self.get_child_visible_locator(detail, 'explore detail _desc')
             desc_text = await desc.inner_text()
             logger.info(f'内容: {desc_text}')
+            # 不一定有标题
+            title = await self.get_child_locator(detail, 'explore detail _title')
+            if await title.is_visible():
+                title_text = await title.inner_text()
+                logger.info(f'标题: {title_text}')
+                messages = [
+                    {'title': title_text},
+                    {'describe': desc_text}
+                ]
+            else:
+                messages = [{'describe': desc_text}]
             # 可能存在
             comments_list = await self.get_child_locator(detail, 'explore detail _comments_list')
             loading = await self.get_child_locator(detail, 'explore loading')
             if await loading.is_visible():
                 await loading.wait_for(state='hidden')
             comments_list = await comments_list.all()
-            messages = [
-                {'title': title_text},
-                {'describe': desc_text}
-            ]
+
             for comments in comments_list:
                 # 只需要看最外层的评论
                 author = await self.get_child_locator(comments, 'explore detail _comments_list _author')
@@ -199,8 +203,8 @@ class XhsChannel(BaseLocator):
                 if await author.is_visible() and await content.is_visible():
                     author_text = await author.inner_text()
                     content_text = await content.inner_text()
-                    logger.info(f'作者: {author_text}, 评论: {content_text}')
-                    messages.append({f'user_{author_text}': content_text})
+                    logger.info(f'用户: {author_text}, 评论: {content_text}')
+                    messages.append({f'参考评论: ': content_text})
                     if author_text.strip() == me_name:
                         logger.info('该内容已评论过')
                         messages = []
@@ -214,7 +218,7 @@ class XhsChannel(BaseLocator):
             await comment.click()
             comment_input = await self.get_visible_locator(page, 'explore input')
             await comment_input.click()
-            logger.info('输入内容')
+            logger.info(f'回复内容: {reply}')
             await page.keyboard.type(reply)
             for sb in mention:
                 await page.keyboard.type(f'@{sb}')

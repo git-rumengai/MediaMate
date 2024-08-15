@@ -46,22 +46,22 @@ discover:
       xpath: '//div[text()="直播中"]'
   hot_:
     name: '热榜框'
-    xpath: '//*[@id="hotItem"]'
+    xpath: '//div[@id="hotItem"]'
   hot:
     name: '热榜'
-    xpath: '//*[@id="semiTab抖音热榜"]'
+    xpath: '//div[@id="semiTab抖音热榜"]'
   game:
     name: '娱乐榜'
-    xpath: '//*[@id="semiTab娱乐榜"]'
+    xpath: '//div[@id="semiTab娱乐榜"]'
   social:
     name: '社会榜'
-    xpath: '//*[@id="semiTab社会榜"]'
+    xpath: '//div[@id="semiTab社会榜"]'
   challenge:
     name: '挑战榜'
-    xpath: '//*[@id="semiTab挑战榜"]'
+    xpath: '//div[@id="semiTab挑战榜"]'
   hot_list:
     name: '榜单列表'
-    xpath: '//*[@id="hotItem"]//ul[contains(@class, "hotChangableList")]/li'
+    xpath: '//div[@id="hotItem"]//ul[contains(@class, "hotChangableList")]/li'
 
 player:
   name: '播放页'
