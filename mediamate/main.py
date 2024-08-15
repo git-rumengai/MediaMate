@@ -53,7 +53,7 @@ async def run_config():
     that may occur.
     """
     try:
-        # await run_xhs()
+        await run_xhs()
         await run_dy()
     except Exception as e:
         logger.error(f"An error occurred: {e}")
