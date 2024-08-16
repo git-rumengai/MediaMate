@@ -54,13 +54,8 @@ async def run_config():
     Executes XHS and DY client configurations concurrently and handles any exceptions
     that may occur.
     """
-    try:
-        await run_xhs()
-        await run_dy()
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
-    finally:
-        logger.info("Exiting program.")
+    await run_xhs()
+    await run_dy()
 
 
 if __name__ == '__main__':

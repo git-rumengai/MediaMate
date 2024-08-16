@@ -1,17 +1,4 @@
 common:
-  verify:
-    title:
-      name: '滑窗标题'
-      xpath: '//div[contains(@class, "请完成下列验证")]'
-    bg_img:
-      name: '背景图'
-      xpath: 'img.captcha-verify-image'
-    gap_img:
-      name: '滑动图'
-      xpath: 'img#captcha-verify_img_slide'
-    bar:
-      name: '滑动按钮'
-      xpath: 'div.captcha-slider-btn'
   tips_move:
     name: '滚动视频提示'
     xpath: '//div[@id="douyin-web-recommend-guide-mask"]//span[contains(text(), "键盘下键")]'

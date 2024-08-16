@@ -7,11 +7,13 @@ class ConvertToHash:
     def __init__(self):
         self.hash_results = []
 
-    def hash_file_content(self, file_name: str) -> str:
+    def hash_file_content(self, file_name: str, hashname: bool = True) -> str:
         """Hash the content of a file using SHA-256."""
         sha256 = hashlib.sha256()
         try:
-            sha256.update(os.path.basename(file_name).encode('utf-8'))
+            # 文件名可能经常变动
+            if hashname:
+                sha256.update(os.path.basename(file_name).encode('utf-8'))
             with open(file_name, 'rb') as file:
                 while chunk := file.read(8192):
                     sha256.update(chunk)
@@ -37,6 +39,8 @@ class ConvertToHash:
         if isinstance(input_data, list):
             for item in input_data:
                 self.hash_results.append(self.hash_file_content(item))
+        elif os.path.isfile(input_data):
+            self.hash_results.append(self.hash_file_content(input_data))
         else:
             self.hash_results.append(self.hash_data(input_data))
 

@@ -13,4 +13,5 @@ opencv-python
 pandas
 
 markdown2
-
+duckduckgo_search
+aiohttp

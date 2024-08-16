@@ -9,7 +9,7 @@ from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.const import OPEN_URL_TIMEOUT
 from mediamate.utils.log_manager import log_manager
 from mediamate.config import config
-from mediamate.platforms.helpers import calculate_gap_position, generate_human_path
+from mediamate.platforms.verify import MoveVerify
 from mediamate.platforms.base import BaseLocator
 from mediamate.utils.const import DEFAULT_DATA_LENGTH
 
@@ -21,6 +21,7 @@ class DyChannel(BaseLocator):
     """ 主页互动 """
     def __init__(self):
         super().__init__()
+        self.verify = MoveVerify()
 
     def init(self, info: MediaLoginInfo):
         """  """
@@ -30,23 +31,6 @@ class DyChannel(BaseLocator):
 
     async def ensure_page(self, page: Page) -> Page:
         """ 页面重新加载, 所有步骤要重新执行 """
-        slider_title = page.locator(self.parser.get_xpath('common verify title'))
-        if await slider_title.is_visible():
-            logger.info('出现滑块验证')
-            for i in range(3):
-                slider_bgimg = await self.get_visible_locator(page, 'common verify bg_img')
-                slider_gapimg = await self.get_visible_locator(page, 'common verify gap_img')
-                slider_bar = await self.get_visible_locator(page, 'common verify bar')
-                bg_url = await slider_bgimg.get_attribute('src')
-                gap_url = await slider_gapimg.get_attribute('src')
-
-                await self.move_slider(page, bg_url, gap_url, slider_bar)
-                if await slider_title.is_hidden():
-                    break
-                else:
-                    logger.info(f'第 {i} 次尝试滑块验证失败')
-                    if i == 3:
-                        logger.info('请手动处理')
         tips_move = page.locator(self.parser.get_xpath('common tips_move'))
         if await tips_move.is_visible():
             logger.info('出现滚动视频弹窗提示')
@@ -67,31 +51,6 @@ class DyChannel(BaseLocator):
         await message_flag.wait_for(timeout=OPEN_URL_TIMEOUT, state='visible')
         return page
 
-    async def move_slider(self, page: Page, bg_url: str, gap_url: str, bar: Locator) -> Page:
-        """ 处理滑动框 """
-        imgs_dir = os.path.abspath('../static/imgs')
-        # 下载图片
-        background_image_path = f'{imgs_dir}/dy_channel_bg.png'
-        gap_image_path = f'f{imgs_dir}/dy_channel_gap.png'
-        await page.goto(bg_url)
-        await page.screenshot(path=background_image_path)
-        await page.goto(gap_url)
-        await page.screenshot(path=gap_image_path)
-
-        # 计算缺口位置
-        gap_position = await calculate_gap_position(background_image_path, gap_image_path)
-        path = generate_human_path(0, gap_position)
-        # 模拟拖动滑块
-        await bar.hover()
-        await page.mouse.down()
-        for point in path:
-            await page.mouse.move(point[0], point[1])
-            await asyncio.sleep(0.05)  # 模拟人类滑动速度
-        await page.mouse.up()
-        # 等待一段时间以确保验证通过
-        await asyncio.sleep(0.1)
-        return page
-
     async def channel_discover(self, page: Page, topics: Tuple[str, ...],
                                times: int = 1,
                                actions: Tuple[str, ...] = (),
@@ -103,7 +62,10 @@ class DyChannel(BaseLocator):
         await discover.click()
         # 确保页面加载完毕
         await self.ensure_page(page)
-        await self.get_visible_locators(page, 'discover hot_list')
+        hot = await self.get_locator(page, 'discover hot')
+        if not await hot.is_visible():
+            logger.info('页面没有热榜, 忽略')
+            return page
         for item in topics:
             if item == '挑战榜':
                 rank = await self.get_visible_locator(page, 'discover challenge')

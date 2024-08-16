@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
-import requests
+import asyncio
+import aiohttp
 from functools import partial
 from typing import Tuple, Optional, List
 from mediamate.platforms.parser import XpathParser
@@ -11,33 +12,111 @@ from mediamate.tools.proxy import acheck_proxy
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.log_manager import log_manager
 from mediamate.utils.const import OPEN_URL_TIMEOUT, DY_BASE_URL, DY_CREATOR_URL, XHS_BASE_URL, XHS_CREATOR_URL
-from mediamate.utils.functions import get_useragent, get_direct_proxy, proxy_to_playwright
+from mediamate.utils.functions import get_useragent, get_direct_proxy, proxy_to_playwright, screenshot
 
 from mediamate.platforms.helpers import get_httpbin, check_cookies_valid, handle_dialog_accept
 from mediamate.utils.enums import LocatorType, MediaType, PlatformType
 from mediamate.tools.api_market.chat import Chat
-from mediamate.platforms.helpers import message_reply
+from mediamate.platforms.helpers import message_reply, download_image
 from mediamate.tools.converter.convert_to_hash import ConvertToHash
+from mediamate.platforms.verify import RotateVerify, MoveVerify, BaseVerify
+
 
 
 logger = log_manager.get_logger(__file__)
 
 
-class BaseClient(ABC):
+class BaseMedia(ABC):
+    """  """
     def __init__(self):
+        self.common_parser = XpathParser().init(f'{config.PROJECT_DIR}/platforms/static/elements/common.yaml')
+        self.votate_verify = RotateVerify()
+        self.move_verify = MoveVerify()
+
+    async def verify_page(self, page: Page) -> Page:
+        """  """
+        if page.url.startswith(XHS_BASE_URL):
+            verify = self.votate_verify
+            slider_title = page.locator(self.common_parser.get_xpath('xhs_verify'))
+            slider_bgimg = page.locator(self.common_parser.get_xpath('xhs_verify bg_img'))
+            slider_gapimg = page.locator(self.common_parser.get_xpath('xhs_verify gap_img'))
+            slider_bar = page.locator(self.common_parser.get_xpath('xhs_verify bar'))
+        elif page.url.startswith(DY_BASE_URL):
+            verify = self.move_verify
+            slider_title = page.locator(self.common_parser.get_xpath('dy_verify'))
+            slider_bgimg = page.locator(self.common_parser.get_xpath('dy_verify bg_img'))
+            slider_gapimg = page.locator(self.common_parser.get_xpath('dy_verify gap_img'))
+            slider_bar = page.locator(self.common_parser.get_xpath('dy_verify bar'))
+        else:
+            logger.info(f'非主页: {page.url}')
+            return page
+
+        if await slider_title.is_visible():
+            logger.info('出现滑块验证')
+            for i in range(3):
+                bg_url = await slider_bgimg.get_attribute('src')
+                gap_url = await slider_gapimg.get_attribute('src')
+                await self.move_slider(page, bg_url, gap_url, slider_bar, verify)
+                if await slider_title.is_hidden():
+                    break
+                else:
+                    logger.info(f'第 {i} 次尝试滑块验证失败')
+                    if i == 3:
+                        logger.info('请手动处理')
+        return page
+
+    async def move_slider(self, page: Page, bg_url: str, gap_url: str, slider: Locator, verify: BaseVerify) -> Page:
+        """ 处理滑动框 """
+        imgs_dir = os.path.abspath(f'{config.PROJECT_DIR}/platform/static/imgs')
+        # 下载图片
+        prefix = page.url.split('.')[1]
+        background_image_path = f'{imgs_dir}/{prefix}_bg.png'
+        gap_image_path = f'{imgs_dir}/{prefix}_gap.png'
+        result_image_path = f'{imgs_dir}/{prefix}_result.png'
+        async with aiohttp.ClientSession() as session:
+            await asyncio.gather(
+                download_image(session, bg_url, background_image_path),
+                download_image(session, gap_url, gap_image_path)
+            )
+
+        # 打印下载路径，确保路径正确
+        print(f"Background image saved to: {background_image_path}")
+        print(f"Gap image saved to: {gap_image_path}")
+
+        distance = verify.calculate(background_image_path, gap_image_path, result_image_path)
+        path = await verify.calculate_path(slider, distance)
+        print(distance)
+        print(path)
+        await slider.scroll_into_view_if_needed()
+        await slider.hover()
+        await page.mouse.down()
+
+        for point in path:
+            x, y = point
+            await page.mouse.move(x, y, steps=1)
+            await asyncio.sleep(0.005)  # Simulate human-like sliding speed
+
+        await page.mouse.up()
+
+        # 等待一段时间以确保验证通过
+        await asyncio.sleep(0.1)
+        return page
+
+
+class BaseClient(BaseMedia):
+    def __init__(self):
+        super().__init__()
         self.login_info = MediaLoginInfo()
         self.user_agent = get_useragent()
-        self.common_parser = XpathParser()
         self.base_url = ''
         self.creator_url = ''
         self.cookies_flag = ''
         self.browser_config = ConfigManager()
         self.convert_to_hash = ConvertToHash()
-        self.uploader: BaseUploader = BaseUploader()
+        self.uploader: BaseUploader = None
         self.chat = Chat()
 
     def init(self, info: MediaLoginInfo):
-        self.common_parser.init(f'{config.PROJECT_DIR}/platforms/static/elements/common.yaml')
         self.login_info = info
         if self.login_info.platform == PlatformType.DY:
             self.base_url = DY_BASE_URL
@@ -180,19 +259,23 @@ class BaseClient(ABC):
         if proxy:
             httpbin = await get_httpbin(proxy)
             logger.info(f'代理ip: {httpbin}')
-            response = requests.get(f'http://ip-api.com/json/{httpbin.strip()}')
-            if response.status_code == 200:
-                data = response.json()
-                logger.info(f"国家: {data['country']}, 省/州: {data['regionName']}, 城市: {data['city']}")
-                logger.info(f"经纬度: {data['lat']}, {data['lon']}")  # 经纬度
-            else:
-                logger.info('ip信息检测失败, 忽略')
+
+            url = f'http://ip-api.com/json/{httpbin.strip()}'
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        logger.info(f"国家: {data['country']}, 省/州: {data['regionName']}, 城市: {data['city']}")
+                        logger.info(f"经纬度: {data['lat']}, {data['lon']}")  # 经纬度
+                    else:
+                        logger.info('ip信息检测失败, 忽略')
 
         if locator == LocatorType.HOME:
             await page.goto(self.base_url, timeout=OPEN_URL_TIMEOUT)
         else:
             await page.goto(self.creator_url, timeout=OPEN_URL_TIMEOUT)
         await page.wait_for_load_state('load')
+        await self.verify_page(page)
         if await self.check_login_state(page):
             logger.info(f'用户保持登录: {self.login_info.account}')
         else:
@@ -241,8 +324,9 @@ class BaseClient(ABC):
         return page
 
 
-class BaseLocator(ABC):
+class BaseLocator(BaseMedia):
     def __init__(self):
+        super().__init__()
         self.parser = XpathParser()
 
     def init(self, elements_path):
@@ -263,6 +347,7 @@ class BaseLocator(ABC):
         以"_list"结尾是xpath列表
         其他则为一般xpath节点
         """
+        await self.verify_page(page)
         await self.ensure_page(page)
         xpath = self.parser.get_xpath(parser_path)
         if index:
@@ -332,5 +417,6 @@ class BaseLocator(ABC):
 
 
 class BaseUploader(BaseLocator):
+    @abstractmethod
     def check_upload_type(self) -> Tuple[MediaType, List[str]]:
         """ 检查上传文件类型类型 """

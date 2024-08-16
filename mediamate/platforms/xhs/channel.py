@@ -1,16 +1,18 @@
 import asyncio
 import re
+import os
 import json
 import random
 from datetime import datetime
 from typing import Tuple, Callable, List, Dict, Coroutine, Any
-from playwright.async_api import Page
+from playwright.async_api import Page, Locator
 
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.log_manager import log_manager
 from mediamate.config import config
 from mediamate.platforms.base import BaseLocator
 from mediamate.utils.const import OPEN_URL_TIMEOUT
+from mediamate.platforms.verify import RotateVerify
 
 
 logger = log_manager.get_logger(__file__)
@@ -20,6 +22,7 @@ class XhsChannel(BaseLocator):
     """ 主页互动 """
     def __init__(self):
         super().__init__()
+        self.verify = RotateVerify()
 
     def init(self, info: MediaLoginInfo):
         """  """
@@ -175,20 +178,18 @@ class XhsChannel(BaseLocator):
             await collect.click()
         if '评论' in actions:
             logger.info('评论')
-            desc = await self.get_child_visible_locator(detail, 'explore detail _desc')
-            desc_text = await desc.inner_text()
-            logger.info(f'内容: {desc_text}')
-            # 不一定有标题
+            messages = []
+            # 不一定有标题/描述
+            desc = await self.get_child_locator(detail, 'explore detail _desc')
+            if await desc.is_visible():
+                desc_text = await desc.inner_text()
+                messages.append({'describe': desc_text})
+                logger.info(f'内容: {desc_text}')
             title = await self.get_child_locator(detail, 'explore detail _title')
             if await title.is_visible():
                 title_text = await title.inner_text()
                 logger.info(f'标题: {title_text}')
-                messages = [
-                    {'title': title_text},
-                    {'describe': desc_text}
-                ]
-            else:
-                messages = [{'describe': desc_text}]
+                messages.append([{'title': title_text}])
             # 可能存在
             comments_list = await self.get_child_locator(detail, 'explore detail _comments_list')
             loading = await self.get_child_locator(detail, 'explore loading')

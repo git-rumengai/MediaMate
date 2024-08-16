@@ -11,6 +11,11 @@ class LocatorType(Enum):
     CREATOR = 'creator'
 
 
+class VerifyType(Enum):
+    MOVE = 'move'
+    ROTATE = 'rotate'
+
+
 class MediaType(Enum):
     VIDEO = 'video'
     AUDIO = 'audio'

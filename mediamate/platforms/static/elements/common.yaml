@@ -28,3 +28,29 @@ logout:
   xhs_creator:
     name: '小红书创作者页登出'
     xpath: '//span[@class="btn-content" and text()=" 登 录 "]'
+
+dy_verify:
+  name: '滑窗标题'
+  xpath: '//div[contains(@class, "请完成下列验证")]'
+  bg_img:
+    name: '背景图'
+    xpath: 'img.captcha-verify-image'
+  gap_img:
+    name: '滑动图'
+    xpath: 'img#captcha-verify_img_slide'
+  bar:
+    name: '滑动按钮'
+    xpath: 'div.captcha-slider-btn'
+
+xhs_verify:
+  name: '验证码'
+  xpath: '//div[contains(text(),"请通过验证")]'
+  gap_img:
+    name: '前景'
+    xpath: '//div[@class="red-captcha-background"]/div[1]/img'
+  bg_img:
+    name: '背景'
+    xpath: '//div[@class="red-captcha-background"]/div[2]/img'
+  bar:
+    name: 'bar'
+    xpath: '//div[@class="red-captcha-slider"]/div'

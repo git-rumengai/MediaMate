@@ -154,7 +154,7 @@ media:
 ```
 
 ## 使用AI功能
-1. 进入 [302.AI](https://302.ai/) 官网注册并申请APIKEY. 
+1. 进入 [302.AI](https://gpt302.saaslink.net/t2ohlA) (链接有优惠)官网注册并申请APIKEY.
 2. 将配置填写到".env"文件中
 ```yaml
 # 302AI

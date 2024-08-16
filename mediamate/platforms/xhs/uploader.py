@@ -10,13 +10,13 @@ from mediamate.utils.log_manager import log_manager
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.config import config, ConfigManager
 from mediamate.utils.enums import MediaType
-from mediamate.platforms.base import BaseLocator
+from mediamate.platforms.base import BaseUploader
 
 
 logger = log_manager.get_logger(__file__)
 
 
-class XhsUploader(BaseLocator):
+class XhsUploader(BaseUploader):
     """ 小红书发布页操作 """
     VIDEO_EXTENSIONS = ['*.mp4', '*.mov', '*.flv', '*.f4v', '*.mkv', '*.rm', '*.rmvb', '*.m4v', '*.mpg', '*.mpeg', '*.ts']
     IMAGE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.png', '*.webp']

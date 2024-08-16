@@ -22,7 +22,7 @@ class PhotoGPT:
     def __init__(self):
         api_key = config.get('302__APIKEY')
         self.chat = Chat().init(api_key=api_key, model='deepseek-chat')
-        self.image_generator = DallesImageGenerator().init(api_key=api_key)
+        self.image_generator = KolorsImageGenerator().init(api_key=api_key)
         self.metadata = ConfigManager()
 
         self.prompt = ''

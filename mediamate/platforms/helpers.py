@@ -70,50 +70,6 @@ async def check_cookies_valid(cookies, identification: str) -> bool:
     return False
 
 
-def generate_human_path(start, end, steps=10):
-    # 生成一个平滑且不规则的路径
-    points = [np.array([start, 0])]
-    for i in range(1, steps):
-        t = i / steps
-        offset = np.random.uniform(-10, 10)  # 随机偏移
-        x = start + t * (end - start) + offset
-        points.append(np.array([x, 0]))
-    points.append(np.array([end, 0]))
-    return points
-
-
-async def calculate_gap_position(background_image_path, gap_image_path, matched_path: str = ''):
-    # 读取背景图和缺口图
-    background_image = cv2.imread(background_image_path, 0)
-    gap_image = cv2.imread(gap_image_path, 0)
-    raw_bg_image = background_image
-    raw_gap_image = gap_image
-
-    # 图像预处理：调整亮度和对比度
-    alpha = 1.5  # 对比度增益
-    beta = 30  # 亮度增益
-    background_image = cv2.convertScaleAbs(background_image, alpha=alpha, beta=beta)
-    gap_image = cv2.convertScaleAbs(gap_image, alpha=alpha, beta=beta)
-
-    # 图像预处理：边缘检测
-    background_image = cv2.Canny(background_image, 100, 200)
-    gap_image = cv2.Canny(gap_image, 100, 200)
-
-    # 使用模板匹配找到缺口位置
-    result = cv2.matchTemplate(background_image, gap_image, cv2.TM_CCOEFF_NORMED)
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-
-    # 缺口位置
-    gap_position = max_loc[0]
-
-    # 视觉验证：在背景图上绘制矩形框
-    if matched_path:
-        h, w = raw_gap_image.shape
-        cv2.rectangle(raw_bg_image, max_loc, (max_loc[0] + w, max_loc[1] + h), (0, 0, 255), 2)
-        cv2.imwrite(matched_path, raw_bg_image)
-    return gap_position
-
-
 async def handle_dialog_dismiss(dialog):
     """监听后处理"""
     await dialog.dismiss()
@@ -134,3 +90,18 @@ async def message_reply(prompt: str, messages: List[Dict[str, str]], chat_api: O
         reply = prompt if prompt else DEFAULT_REPLY
     # 抖音评论有换行符会直接确认
     return reply.replace('\n', '   ')
+
+
+async def download_image(session, url: str, file_path: str):
+    """异步下载图片并保存到文件"""
+    async with session.get(url) as response:
+        if response.status == 200:
+            with open(file_path, 'wb') as file:
+                while True:
+                    chunk = await response.content.read(1024)
+                    if not chunk:
+                        break
+                    file.write(chunk)
+            logger.info(f'文件下载完毕: {file_path}')
+        else:
+            logger.info(f"Failed to download image, status code: {response.status}")

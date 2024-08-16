@@ -1,12 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-@Time    : 2023/5/6 14:13
-@Author  : alexanderwu
-@File    : hello_world.py
-"""
 import asyncio
-from mediamate.config import config
+from mediamate.config import config     # 必须在导入metagpt工具包之前添加这一行以确保环境变量正确
 
 from metagpt.llm import LLM
 from metagpt.logs import logger
@@ -21,12 +14,15 @@ async def ask_and_print(question: str, llm: LLM, system_prompt) -> str:
 
 async def lowlevel_api_example(llm: LLM):
     logger.info("low level api example")
+    # 批量提问, 结果通过'\n'连接的字符串
     logger.info(await llm.aask_batch(["hi", "write python hello world."]))
 
     hello_msg = [{"role": "user", "content": "count from 1 to 10. split by newline."}]
+    # 返回对象
     logger.info(await llm.acompletion(hello_msg))
+    # 返回 ChatCompletion 对象
     logger.info(await llm.acompletion_text(hello_msg))
-
+    # 返回字符串结果
     # streaming mode, much slower
     await llm.acompletion_text(hello_msg, stream=True)
 

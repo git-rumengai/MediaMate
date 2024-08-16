@@ -106,6 +106,7 @@ class ConvertToText:
         # 使用FFmpeg提取音频
         command = [
             'ffmpeg',
+            '-y',               # 总是覆盖文件
             '-i', video_path,  # 输入视频文件
             '-vn',  # 禁用视频流
             '-acodec', 'pcm_s16le',  # 设置音频编码为PCM 16位小端
@@ -122,7 +123,9 @@ class ConvertToText:
     def read_video_file(self, filename: str) -> str:
         """  """
         try:
-            response = self.media_recognizer.get_response(filename)
+            audio_output_path = self.extract_audio_from_video(filename)
+            logger.info(f'视频要先转为音频文件: {audio_output_path}')
+            response = self.media_recognizer.get_response(audio_output_path)
             return response
         except Exception as e:
             return f"读取视频件时发生错误. {filename}, Error: {e}"
