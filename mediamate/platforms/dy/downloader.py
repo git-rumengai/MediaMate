@@ -75,7 +75,7 @@ class DyDownloader(BaseLocator):
                 count += 1
                 # 滚动页面，确保新内容可以加载
                 await self.scroll(page)
-                await asyncio.sleep(0.5)  # 适当的延迟，让页面加载更多内容
+                await page.wait_for_timeout(300)  # 适当的延迟，让页面加载更多内容
                 if await loading_end.is_visible():
                     logger.info("找到了 '没有更多作品' 的提示")
                     break
@@ -89,7 +89,7 @@ class DyDownloader(BaseLocator):
                 if len(video_cards) < num:
                     # 滚动页面，确保新内容可以加载
                     await self.scroll(page)
-                    await asyncio.sleep(1)  # 适当的延迟，让页面加载更多内容
+                    await page.wait_for_timeout(300)  # 适当的延迟，让页面加载更多内容
                 else:
                     logger.info(f'滑动页面第 {count} 次, 直至获取{num}条数据')
                     break
@@ -189,12 +189,18 @@ class DyDownloader(BaseLocator):
             logger.info(f'无下载标签, 默认下载: 财经')
             words = ('财经', )
 
+        showmore = await self.get_visible_locator(page, 'creative guidance showmore')
+        await showmore.click()
+
         title_list = await self.get_visible_locators(page, 'creative guidance title_list')
         all_nodes = await title_list.all()
         all_child_nodes = {}
         for node in all_nodes:
-            name = await node.inner_text()
-            all_child_nodes[name.strip()] = node
+            inner_nodes = await self.get_child_visible_locators(node, 'creative guidance title_list inner_title_list')
+            inner_nodes = await inner_nodes.all()
+            for inner_node in inner_nodes:
+                name = await inner_node.inner_text()
+                all_child_nodes[name.strip()] = inner_node
 
         result = {}
         for word in words:

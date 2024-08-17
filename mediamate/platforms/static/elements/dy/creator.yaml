@@ -204,8 +204,11 @@ creative:
       name: '查看更多'
       xpath: '//div[contains(@class,"show-button")]'
     title_list:
-      name: '数据标题'
-      xpath: '//div[contains(@class,"discover-kind")]/div/div'
+      name: '标题列表'
+      xpath: '//div[contains(@class,"discover-kind")]/div'
+      inner_title_list:
+        name: '标题'
+        xpath: '/div'
     data_list:
       name: '数据列表'
       xpath: '//div[contains(@class,"discover-card")]/div'

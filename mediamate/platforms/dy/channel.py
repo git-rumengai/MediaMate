@@ -69,25 +69,25 @@ class DyChannel(BaseLocator):
                 if item == '挑战榜':
                     rank = await self.get_visible_locator(page, 'discover challenge')
                     await rank.click()
-                    await asyncio.sleep(0.1)
+                    await page.wait_for_timeout(100)
                     ul = await self.get_visible_locators(page, 'discover hot_list')
                     lis = await ul.all()
                 elif item == '热榜':
                     rank = await self.get_visible_locator(page, 'discover hot')
                     await rank.click()
-                    await asyncio.sleep(0.1)
+                    await page.wait_for_timeout(100)
                     ul = await self.get_visible_locators(page, 'discover hot_list')
                     lis = await ul.all()
                 elif item == '娱乐榜':
                     rank = await self.get_visible_locator(page, 'discover game')
                     await rank.click()
-                    await asyncio.sleep(0.1)
+                    await page.wait_for_timeout(100)
                     ul = await self.get_visible_locators(page, 'discover hot_list')
                     lis = await ul.all()
                 elif item == '社会榜':
                     rank = await self.get_visible_locator(page, 'discover social')
                     await rank.click()
-                    await asyncio.sleep(0.1)
+                    await page.wait_for_timeout(100)
                     ul = await self.get_visible_locators(page, 'discover hot_list')
                     lis = await ul.all()
             else:
@@ -148,7 +148,7 @@ class DyChannel(BaseLocator):
                     else:
                         comments_ = await comments_list.all()
                         if len(comments_) < DEFAULT_DATA_LENGTH:
-                            await asyncio.sleep(0.5)
+                            await page.wait_for_timeout(300)
                         else:
                             break
                 for comments in comments_:
@@ -177,7 +177,7 @@ class DyChannel(BaseLocator):
             await close.click()
             logger.info('点击退出')
             exit = await self.get_visible_locator(page, 'player exit')
-            await asyncio.sleep(0.1)
+            await page.wait_for_timeout(100)
             await exit.click()
             await exit.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
             logger.info('已关闭')
@@ -193,11 +193,13 @@ class DyChannel(BaseLocator):
         await self.ensure_page(page)
         user_list = await self.get_visible_locators(page, 'search user_list')
         user_list = await user_list.all()
-        _number = await self.get_child_visible_locator(user_list[0], 'search user_list _number')
-        _number_text = await _number.inner_text()
-        if _number_text.strip() != number:
-            logger.info(f'抖音号搜索不存在, 忽略')
-            return False
+        # 不要校验
+        # _number = await self.get_child_visible_locator(user_list[0], 'search user_list _number')
+        # _number_text = await _number.inner_text()
+        # if _number_text.strip() != number:
+        #     logger.info(f'抖音号搜索不存在, 忽略')
+        #     return False
+
         # 这里通过链接跳转, 不要更换page
         url = await self.get_child_visible_locator(user_list[0], 'search user_list _url')
         url_text = await url.get_attribute('href')
@@ -222,7 +224,7 @@ class DyChannel(BaseLocator):
                 break
             await self.scroll(page)
             logger.info(f'滚动页面加载更多数据: {count}')
-            await asyncio.sleep(0.3)
+            await page.wait_for_timeout(300)
             videos = await video_list.all()
             if len(videos) > DEFAULT_DATA_LENGTH:
                 break
@@ -321,7 +323,7 @@ class DyChannel(BaseLocator):
         await message_input.click()
         await page.keyboard.type(msg)
         await page.keyboard.press('Enter')
-        await asyncio.sleep(0.3)
+        await page.wait_for_timeout(300)
         return page
 
     async def player_chat(self,
@@ -350,7 +352,7 @@ class DyChannel(BaseLocator):
                 else:
                     comments_ = await comments_list.all()
                     if len(comments_) < DEFAULT_DATA_LENGTH:
-                        await asyncio.sleep(1)
+                        await page.wait_for_timeout(300)
                     else:
                         break
             for comments in comments_[:batch]:
@@ -414,7 +416,7 @@ class DyChannel(BaseLocator):
                     page = await self.player_chat(page, msg, batch, callback)
                     logger.info('点击退出')
                     exit = await self.get_visible_locator(page, 'player exit')
-                    await asyncio.sleep(0.1)
+                    await page.wait_for_timeout(100)
                     await exit.click()
         return page
 

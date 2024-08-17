@@ -238,7 +238,7 @@ class DyUploader(BaseUploader):
             await input_theme.fill(theme)
             follow_counts = []
             theme_list = await self.get_visible_locators(page, 'upload click_theme theme_list')
-            await asyncio.sleep(0.1)
+            await page.wait_for_timeout(100)
             theme_list = await theme_list.all()
             for index, theme in enumerate(theme_list):
                 content = await self.get_child_visible_locator(theme, 'upload click_theme theme_list _content')

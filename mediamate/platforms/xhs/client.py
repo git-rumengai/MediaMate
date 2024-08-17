@@ -39,14 +39,18 @@ class XhsClient(BaseClient):
             if not await self.check_login_state(page):
                 logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
                 return
-            page = await self.start_me(page)
-            page = await self.start_explore(page)
-            page = await self.start_download(page)
-            page = await self.start_comment(page)
-            # 停止跟踪并保存文件
-            trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_base.zip'
-            await context.tracing.stop(path=trace_path)
-            logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
+            try:
+                page = await self.start_me(page)
+                page = await self.start_explore(page)
+                page = await self.start_download(page)
+                page = await self.start_comment(page)
+            except Exception as e:
+                logger.error(e)
+            finally:
+                # 停止跟踪并保存文件
+                trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_base.zip'
+                await context.tracing.stop(path=trace_path)
+                logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
 
         if playwright:
             await _start(playwright)
@@ -61,13 +65,17 @@ class XhsClient(BaseClient):
             if not await self.check_login_state(page):
                 logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
                 return
-            if self.login_info.creator.get('upload'):
-                page = await self.start_upload(page)
-            page = await self.start_mydata(page)
-            # 停止跟踪并保存文件
-            trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_creator.zip'
-            await context.tracing.stop(path=trace_path)
-            logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
+            try:
+                if self.login_info.creator.get('upload'):
+                    page = await self.start_upload(page)
+                page = await self.start_mydata(page)
+            except Exception as e:
+                logger.error(e)
+            finally:
+                # 停止跟踪并保存文件
+                trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_creator.zip'
+                await context.tracing.stop(path=trace_path)
+                logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
 
         if playwright:
             await _start(playwright)
@@ -80,7 +88,7 @@ class XhsClient(BaseClient):
         download = self.login_info.creator.get('download')
         if download:
             page = await self.downloader.click_inspiration(page, topics=tuple(download))
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
         return page
 
     async def start_me(self, page: Page) -> Page:
@@ -92,7 +100,7 @@ class XhsClient(BaseClient):
             prompt = me.get('prompt')
             partial_reply = self.get_reply_func(default, prompt)
             page = await self.channel.channel_me(page, days=days, callback=partial_reply)
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
         return page
 
     async def start_explore(self, page: Page) -> Page:
@@ -119,7 +127,7 @@ class XhsClient(BaseClient):
             os.makedirs(full_dir, exist_ok=True)
 
             page = await self.channel.channel_download(page, data_dir=full_dir, ids=ids)
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
         return page
 
     async def start_comment(self, page: Page) -> Page:
@@ -135,7 +143,7 @@ class XhsClient(BaseClient):
             prompt = comment.get('prompt')
             partial_reply = self.get_reply_func(default, prompt)
             page = await self.channel.channel_comment(page, ids=ids, times=times, actions=actions, mention=mention, shuffle=shuffle, callback=partial_reply)
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
         return page
 
     async def upload_text(self, page: Page) -> Optional[Page]:
@@ -153,8 +161,8 @@ class XhsClient(BaseClient):
         page = await self.uploader.set_permission(page)
         page = await self.uploader.set_time(page)
         page = await self.uploader.click_publish(page)
-        logger.info('图文发布成功, 5s自动返回')
-        await asyncio.sleep(5)
+        logger.info('图文发布成功, 3s自动返回')
+        await page.wait_for_timeout(3000)
 
         return page
 
@@ -173,8 +181,8 @@ class XhsClient(BaseClient):
         page = await self.uploader.set_permission(page)
         page = await self.uploader.set_time(page)
         page = await self.uploader.click_publish(page)
-        logger.info('视频发布成功, 5s自动返回')
-        await asyncio.sleep(5)
+        logger.info('视频发布成功, 3s自动返回')
+        await page.wait_for_timeout(3000)
         return page
 
 

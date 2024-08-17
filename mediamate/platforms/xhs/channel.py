@@ -224,7 +224,7 @@ class XhsChannel(BaseLocator):
             for sb in mention:
                 await page.keyboard.type(f'@{sb}')
                 # 小红书的@功能及不稳定, 放弃治疗
-                await asyncio.sleep(0.1)
+                await page.wait_for_timeout(100)
                 mention = await self.get_locator(page, 'explore mention')
                 if await mention.is_visible():
                     await mention.click()

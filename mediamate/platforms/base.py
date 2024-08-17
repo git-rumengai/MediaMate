@@ -79,14 +79,9 @@ class BaseMedia(ABC):
                 download_image(session, gap_url, gap_image_path)
             )
 
-        # 打印下载路径，确保路径正确
-        print(f"Background image saved to: {background_image_path}")
-        print(f"Gap image saved to: {gap_image_path}")
-
         distance = verify.calculate(background_image_path, gap_image_path, result_image_path)
         path = await verify.calculate_path(slider, distance)
-        print(distance)
-        print(path)
+
         await slider.scroll_into_view_if_needed()
         await slider.hover()
         await page.mouse.down()
@@ -94,12 +89,12 @@ class BaseMedia(ABC):
         for point in path:
             x, y = point
             await page.mouse.move(x, y, steps=1)
-            await asyncio.sleep(0.005)  # Simulate human-like sliding speed
+            await page.wait_for_timeout(5)  # Simulate human-like sliding speed
 
         await page.mouse.up()
 
         # 等待一段时间以确保验证通过
-        await asyncio.sleep(0.1)
+        await page.wait_for_timeout(100)
         return page
 
 

@@ -42,14 +42,18 @@ class DyClient(BaseClient):
             if not await self.check_login_state(page):
                 logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
                 return
-            page = await self.start_discover(page)
-            page = await self.start_download(page)
-            page = await self.start_comment(page)
-            page = await self.start_follow(page)
-            # 停止跟踪并保存文件
-            trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_base.zip'
-            await context.tracing.stop(path=trace_path)
-            logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
+            try:
+                page = await self.start_discover(page)
+                page = await self.start_download(page)
+                page = await self.start_comment(page)
+                page = await self.start_follow(page)
+            except Exception as e:
+                logger.error(e)
+            finally:
+                # 停止跟踪并保存文件
+                trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_base.zip'
+                await context.tracing.stop(path=trace_path)
+                logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
 
         if playwright:
             await _start(playwright)
@@ -64,14 +68,18 @@ class DyClient(BaseClient):
             if not await self.check_login_state(page):
                 logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
                 return
-            if self.login_info.creator.get('upload'):
-                await self.start_upload(page)
-            await self.start_mydata(page)
-            await self.start_operate(page)
-            # 停止跟踪并保存文件
-            trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_creator.zip'
-            await context.tracing.stop(path=trace_path)
-            logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
+            try:
+                if self.login_info.creator.get('upload'):
+                    await self.start_upload(page)
+                await self.start_mydata(page)
+                await self.start_operate(page)
+            except Exception as e:
+                logger.error(e)
+            finally:
+                # 停止跟踪并保存文件
+                trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_creator.zip'
+                await context.tracing.stop(path=trace_path)
+                logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
 
         if playwright:
             await _start(playwright)
@@ -89,9 +97,9 @@ class DyClient(BaseClient):
                 page = await self.downloader.click_datacenter(page)
             if downloader.get('creative_guidance'):
                 page = await self.downloader.click_creative_guidance(page, tuple(downloader.get('creative_guidance')))
-            if downloader.get('排行榜'):
+            if downloader.get('billboard'):
                 page = await self.downloader.click_billboard(page, tuple(downloader.get('billboard')))
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
         return page
 
     async def start_operate(self, page: Page):
@@ -109,7 +117,7 @@ class DyClient(BaseClient):
             prompt = operator_chat.get('prompt')
             partial_reply = self.get_reply_func(default, prompt)
             page = await self.operator.click_chat(page, partial_reply)
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
         return page
 
     async def start_discover(self, page: Page) -> Page:
@@ -188,7 +196,7 @@ class DyClient(BaseClient):
             page = await self.uploader.set_time(page)
             page = await self.uploader.click_publish(page)
             logger.info('图文发布成功, 5s自动返回')
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
             return page
         except Exception as e:
             logger.error(f'上传图文报错: {e}')
@@ -215,7 +223,7 @@ class DyClient(BaseClient):
             page = await self.uploader.set_time(page)
             page = await self.uploader.click_publish(page)
             logger.info('视频发布成功, 3s自动返回')
-            await asyncio.sleep(3)
+            await page.wait_for_timeout(3000)
             return page
         except Exception as e:
             logger.error(f'上传视频报错: {e}')

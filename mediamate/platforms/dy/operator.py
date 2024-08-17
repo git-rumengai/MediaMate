@@ -108,7 +108,7 @@ class DyOperator(BaseLocator):
                 await send_button.wait_for(state='attached')
                 await send_button.click()
                 logger.info('评论已回复')
-                await asyncio.sleep(random.random() * 3)
+                await page.wait_for_timeout(random.random() * 300)
 
     async def click_comment(self, page: Page, days: int = 7, callback: Callable[..., Coroutine[Any, Any, str]] = None) -> Optional[Page]:
         """  """
