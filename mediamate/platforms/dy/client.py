@@ -38,7 +38,7 @@ class DyClient(BaseClient):
     async def start_base(self, playwright: Optional[Playwright] = None):
         """启动基础流程，支持内部与外部 Playwright 上下文管理器"""
         async def _start(playwright):
-            page = await self.login(playwright, LocatorType.HOME)
+            context, page = await self.login(playwright, LocatorType.HOME)
             if not await self.check_login_state(page):
                 logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
                 return
@@ -46,6 +46,10 @@ class DyClient(BaseClient):
             page = await self.start_download(page)
             page = await self.start_comment(page)
             page = await self.start_follow(page)
+            # 停止跟踪并保存文件
+            trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_base.zip'
+            await context.tracing.stop(path=trace_path)
+            logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
 
         if playwright:
             await _start(playwright)
@@ -56,7 +60,7 @@ class DyClient(BaseClient):
     async def start_creator(self, playwright: Optional[Playwright] = None):
         """启动基础流程，支持内部与外部 Playwright 上下文管理器"""
         async def _start(playwright):
-            page = await self.login(playwright, LocatorType.CREATOR)
+            context, page = await self.login(playwright, LocatorType.CREATOR)
             if not await self.check_login_state(page):
                 logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
                 return
@@ -64,6 +68,10 @@ class DyClient(BaseClient):
                 await self.start_upload(page)
             await self.start_mydata(page)
             await self.start_operate(page)
+            # 停止跟踪并保存文件
+            trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_creator.zip'
+            await context.tracing.stop(path=trace_path)
+            logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
 
         if playwright:
             await _start(playwright)

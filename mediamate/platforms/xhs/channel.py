@@ -229,7 +229,8 @@ class XhsChannel(BaseLocator):
                 if await mention.is_visible():
                     await mention.click()
                     await mention.wait_for(state='hidden')
-            return page
+            await page.keyboard.press('Enter')
+        return page
 
     async def channel_explore(self, page: Page,
                               topics: Tuple[str, ...],

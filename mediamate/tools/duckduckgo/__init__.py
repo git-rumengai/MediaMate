@@ -1,6 +1,14 @@
-from duckduckgo_search import DDGS
-from pprint import pprint
+"""Duckduckgo_search.
+
+Search for words, documents, images, videos, news, maps and text translation
+using the DuckDuckGo.com search engine.
+"""
+
+import asyncio
+from duckduckgo_search import DDGS, AsyncDDGS, __version__
+
+__all__ = ["DDGS", "AsyncDDGS", "__version__"]
 
 
-with DDGS() as ddgs:
-    pprint([r for r in ddgs.news("CHATGPT", region='cn-zh', max_results=10)])
+# 必须要添加这句话防止duckduckgo_search与playwright冲突
+asyncio.set_event_loop_policy(None)

@@ -63,44 +63,45 @@ class DyChannel(BaseLocator):
         # 确保页面加载完毕
         await self.ensure_page(page)
         hot = await self.get_locator(page, 'discover hot')
-        if not await hot.is_visible():
-            logger.info('页面没有热榜, 忽略')
-            return page
+        lis = []
         for item in topics:
-            if item == '挑战榜':
-                rank = await self.get_visible_locator(page, 'discover challenge')
-                await rank.click()
-                await asyncio.sleep(0.1)
-                ul = await self.get_visible_locators(page, 'discover hot_list')
-                lis = await ul.all()
-            elif item == '热榜':
-                rank = await self.get_visible_locator(page, 'discover hot')
-                await rank.click()
-                await asyncio.sleep(0.1)
-                ul = await self.get_visible_locators(page, 'discover hot_list')
-                lis = await ul.all()
-            elif item == '娱乐榜':
-                rank = await self.get_visible_locator(page, 'discover game')
-                await rank.click()
-                await asyncio.sleep(0.1)
-                ul = await self.get_visible_locators(page, 'discover hot_list')
-                lis = await ul.all()
-            elif item == '社会榜':
-                rank = await self.get_visible_locator(page, 'discover social')
-                await rank.click()
-                await asyncio.sleep(0.1)
-                ul = await self.get_visible_locators(page, 'discover hot_list')
-                lis = await ul.all()
+            if await hot.is_visible():
+                if item == '挑战榜':
+                    rank = await self.get_visible_locator(page, 'discover challenge')
+                    await rank.click()
+                    await asyncio.sleep(0.1)
+                    ul = await self.get_visible_locators(page, 'discover hot_list')
+                    lis = await ul.all()
+                elif item == '热榜':
+                    rank = await self.get_visible_locator(page, 'discover hot')
+                    await rank.click()
+                    await asyncio.sleep(0.1)
+                    ul = await self.get_visible_locators(page, 'discover hot_list')
+                    lis = await ul.all()
+                elif item == '娱乐榜':
+                    rank = await self.get_visible_locator(page, 'discover game')
+                    await rank.click()
+                    await asyncio.sleep(0.1)
+                    ul = await self.get_visible_locators(page, 'discover hot_list')
+                    lis = await ul.all()
+                elif item == '社会榜':
+                    rank = await self.get_visible_locator(page, 'discover social')
+                    await rank.click()
+                    await asyncio.sleep(0.1)
+                    ul = await self.get_visible_locators(page, 'discover hot_list')
+                    lis = await ul.all()
             else:
-                ul = await self.get_visible_locators(page, 'discover container_list')
-                container_list = await ul.all()
-                lis = []
-                # 过滤直播
-                for li in container_list:
-                    live = await self.get_child_locator(li, 'discover container_list _live')
-                    if await live.is_visible():
-                        continue
-                    lis.append(li)
+                logger.info('页面没有热榜, 忽略')
+                if item == '首页':
+                    ul = await self.get_visible_locators(page, 'discover container_list')
+                    container_list = await ul.all()
+                    lis = []
+                    # 过滤直播
+                    for li in container_list:
+                        live = await self.get_child_locator(li, 'discover container_list _live')
+                        if await live.is_visible():
+                            continue
+                        lis.append(li)
 
             times = min(int(times), len(lis))
             lis = lis[:times]

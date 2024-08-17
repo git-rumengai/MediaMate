@@ -1,5 +1,7 @@
 import asyncio
+from pprint import pprint
 from mediamate.agents.simple.image_newspaper import ImageNewspaper
+
 
 """
 运行该脚本需要确保网络可以访问Google
@@ -13,7 +15,7 @@ async def get_image_news():
     # 主题列表: 'Top Stories', 'World', 'Nation', 'Business', 'Technology', 'Entertainment', 'Sports', 'Science','Health'
     news_topic = 'Technology'
     # 搜索关键词
-    news_keywords = ('AI', 'AI图片', 'AI音乐', 'AI视频')
+    news_keywords = ('AI图片', 'AI音乐', 'AI视频', 'AI搜索')
 
     # 发布图文时的参数配置
     # 发布标题, 描述, 标签, 地点
@@ -28,10 +30,14 @@ async def get_image_news():
     media_download = '否'
 
     inp = ImageNewspaper()
-    inp.init(news_title, news_topic, news_keywords)
+    inp.init(news_title, news_keywords, news_topic)
     inp.init_media(media_title, media_desc, media_labels, media_location, media_wait_minute, media_theme, media_download)
 
-    await inp.get_md_news(limit=5, days=100)
+
+    await inp.get_ddgs_news(3)
+    pprint(inp.md_news)
+    # await inp.get_google_news(5)
+    # pprint(inp.md_news)
     await inp.save_to_xhs()
     await inp.save_to_dy()
 

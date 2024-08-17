@@ -37,6 +37,8 @@ class ConvertToImage:
         await self.html_to_image(html_content, output_image_path)
 
     async def markdown_to_image(self, markdown_text, output_image_path):
+        if not markdown_text:
+            return
         html_content = markdown2.markdown(markdown_text, extras=["fenced-code-blocks", "code-friendly"])
         full_html_content = f"""
             <html>

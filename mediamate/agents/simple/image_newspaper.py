@@ -5,6 +5,9 @@ converting it to Markdown format, and saving it as images to various platforms.
 import os
 from datetime import datetime, timedelta
 from typing import Tuple, List
+
+
+from mediamate.tools.duckduckgo import AsyncDDGS
 from mediamate.tools.google_news.client import GoogleNewsClient
 from mediamate.tools.converter.convert_to_image import ConvertToImage
 from mediamate.config import config, ConfigManager
@@ -21,7 +24,7 @@ class ImageNewspaper:
     """
     def __init__(self):
         self.google_news = GoogleNewsClient()
-        self.tti = ConvertToImage()
+        self.cti = ConvertToImage()
         self.metadata = ConfigManager()
 
         self.news_config = {
@@ -41,9 +44,9 @@ class ImageNewspaper:
         }
         self.md_news = []
 
-    def init(self, title: str = '', topic: str = '', keywords: Tuple[str, ...] = ()):
+    def init(self, title: str = '', keywords: Tuple[str, ...] = (), topic: str = ''):
         """
-        Initialize news configuration.
+        topic： google_news需要
         """
         self.news_config['title'] = title or self.news_config['title']
         self.news_config['topic'] = topic or self.news_config['topic']
@@ -86,7 +89,28 @@ class ImageNewspaper:
             max_results=limit
         )
 
-    async def get_md_news(self, limit: int = 5, days: int = 7) -> List[str]:
+    async def get_ddgs_news(self, limit: int = 5, days: int = 7) -> List[str]:
+        """ timelimit设置为None, 然后自己对新闻排序并过滤 """
+        self.md_news = []
+        for query in self.news_config['keywords']:
+            news = await AsyncDDGS().anews(query, region='cn-zh', safesearch='off', timelimit=None, max_results=limit)
+            # 过滤并排序
+            if news:
+                recent_news = sorted(
+                    (item for item in news
+                     if
+                     datetime.fromisoformat(item['date']).replace(tzinfo=None) >= datetime.now() - timedelta(days=days)),
+                    key=lambda x: datetime.fromisoformat(x['date']).replace(tzinfo=None),
+                    reverse=True
+                )
+                if recent_news:
+                    md_text = f"""# {self.news_config['title']}: {query}\n """
+                    for inner, item in enumerate(recent_news):
+                        md_text += f"""\n#### {item['title'].strip()}\n\n> 详情:{item['body'].strip()}\n\n发布日期:{item['date'].strip()} """
+                    self.md_news.append(md_text)
+        return self.md_news
+
+    async def get_google_news(self, limit: int = 5, days: int = 7) -> List[str]:
         """
         Fetch news from Google News and convert it to Markdown format.
 
@@ -124,7 +148,9 @@ class ImageNewspaper:
                 account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/image_news'
                 os.makedirs(account_dir, exist_ok=True)
                 for index, news in enumerate(self.md_news):
-                    await self.tti.markdown_to_image(news, f'{account_dir}/{index}.png')
+                    print(news)
+                    print(f'{account_dir}/{index}.png')
+                    await self.cti.markdown_to_image(news, f'{account_dir}/{index}.png')
                 self.metadata.init(f'{account_dir}/metadata.yaml')
                 await self.metadata.set('标题', self.media_config['title'])
                 await self.metadata.set('描述', self.media_config['desc'])
@@ -145,7 +171,7 @@ class ImageNewspaper:
                 account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/image_news'
                 os.makedirs(account_dir, exist_ok=True)
                 for index, news in enumerate(self.md_news):
-                    await self.tti.markdown_to_image(news, f'{account_dir}/{index}.png')
+                    await self.cti.markdown_to_image(news, f'{account_dir}/{index+1}.png')
                 self.metadata.init(f'{account_dir}/metadata.yaml')
                 await self.metadata.set('标题', self.media_config['title'])
                 await self.metadata.set('描述', self.media_config['desc'])

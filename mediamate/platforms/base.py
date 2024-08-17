@@ -5,14 +5,14 @@ import aiohttp
 from functools import partial
 from typing import Tuple, Optional, List
 from mediamate.platforms.parser import XpathParser
-from playwright.async_api import Page, Locator
+from playwright.async_api import Page, Locator, BrowserContext
 
 from mediamate.config import config, ConfigManager
 from mediamate.tools.proxy import acheck_proxy
 from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.log_manager import log_manager
 from mediamate.utils.const import OPEN_URL_TIMEOUT, DY_BASE_URL, DY_CREATOR_URL, XHS_BASE_URL, XHS_CREATOR_URL
-from mediamate.utils.functions import get_useragent, get_direct_proxy, proxy_to_playwright, screenshot
+from mediamate.utils.functions import get_useragent, get_direct_proxy, proxy_to_playwright
 
 from mediamate.platforms.helpers import get_httpbin, check_cookies_valid, handle_dialog_accept
 from mediamate.utils.enums import LocatorType, MediaType, PlatformType
@@ -48,7 +48,7 @@ class BaseMedia(ABC):
             slider_gapimg = page.locator(self.common_parser.get_xpath('dy_verify gap_img'))
             slider_bar = page.locator(self.common_parser.get_xpath('dy_verify bar'))
         else:
-            logger.info(f'非主页: {page.url}')
+            # logger.info(f'非主页: {page.url}')
             return page
 
         if await slider_title.is_visible():
@@ -67,7 +67,7 @@ class BaseMedia(ABC):
 
     async def move_slider(self, page: Page, bg_url: str, gap_url: str, slider: Locator, verify: BaseVerify) -> Page:
         """ 处理滑动框 """
-        imgs_dir = os.path.abspath(f'{config.PROJECT_DIR}/platform/static/imgs')
+        imgs_dir = os.path.abspath(f'{config.PROJECT_DIR}/platforms/static/imgs')
         # 下载图片
         prefix = page.url.split('.')[1]
         background_image_path = f'{imgs_dir}/{prefix}_bg.png'
@@ -176,7 +176,7 @@ class BaseClient(BaseMedia):
         await user_profile.wait_for(timeout=OPEN_URL_TIMEOUT, state='visible')
         return True
 
-    async def login(self, playwright, locator: LocatorType = LocatorType.HOME) -> Optional[Page]:
+    async def login(self, playwright, locator: LocatorType = LocatorType.HOME) -> Tuple[BrowserContext, Page]:
         """ 登录账户 """
         user_data_dir = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}'
         os.makedirs(user_data_dir, exist_ok=True)
@@ -249,6 +249,9 @@ class BaseClient(BaseMedia):
             # 关闭浏览器重新以有头模式打开
             await context.close()
             context = await playwright.chromium.launch_persistent_context(**launch_options, **context_options_headed)
+
+        # 开启跟踪模式
+        await context.tracing.start(screenshots=True, snapshots=True)
         page = context.pages[0]
         # 浏览器检测工具
         # await page.goto('https://abrahamjuliot.github.io/creepjs/')
@@ -285,7 +288,7 @@ class BaseClient(BaseMedia):
                 logger.info(f'用户登录成功')
             except Exception as e:
                 logger.info('用户登录失败')
-        return page
+        return context, page
 
     @abstractmethod
     async def upload_text(self, page: Page) -> Optional[Page]:
