@@ -1,0 +1,302 @@
+common:
+  tips_move:
+    name: '滚动视频提示'
+    xpath: '//div[@id="douyin-web-recommend-guide-mask"]//span[contains(text(), "键盘下键")]'
+  tips_audio:  # 不用处理
+    name: '打开声音提示'
+    xpath: '//div[@data-e2e="feed-active-video"]//span[contains(text(), "点击打开声音")]'
+  page_loading:
+    name: '页面加载中'
+    xpath: '//div[@class="uzRfxSxz lytIudkE"]/div[contains(text(), "加载中")]'
+  tips_default:
+    name: '默认页面'
+    xpath: '//div[@class="modal-pannel"]/div[2]/*[name()="svg"]'
+
+section:
+  no_section:
+    name: '未发表视频'
+    xpath: '//p[contains(text(), "暂无内容")]'
+  username:
+    name: '主页用户名'
+    xpath: '//div[@data-e2e="user-info"]/div/h1'
+  private:
+    name: '私密账号(不一定有)'
+    xpath: '//p[text()="私密账号"]'
+  follow:
+    name: '关注'
+    xpath: '//div[@data-e2e="user-detail"]/div/div[2]/div[3]/div[3]/div[1]'
+    _button:
+      name: '按钮'
+      xpath: '/button[1]'
+    _not:
+      name: ''
+      xpath: 'button[1][contains(@class, "primary")]'
+    _clicked:
+      name: ''
+      xpath: '/button[1][contains(@class, "secondary")]'
+  message:
+    name: '私信'
+    xpath: '//div[@data-e2e="user-detail"]/div/div[2]/div[3]/div[3]/div[1]/button[2]'
+  text_video:
+    name: '作品数量'
+    xpath: '//div[@id="semiTabpost"]//span[@data-e2e="user-tab-count"]'
+  no_more:
+    name: '没有更多'
+    xpath: '//div[text()="暂时没有更多了"]'
+  section_list:
+    name: '视频列表'
+    xpath: '//div[@data-e2e="user-post-list"]/ul/li'
+    _url:
+      name: '地址'
+      xpath: '/div/a'
+    _img:
+      name: '封面'
+      xpath: '/div/a/div/div[1]/img'
+    _like:
+      name: '点赞量'
+      xpath: '//span[@class="semi-icon semi-icon-default"]/following-sibling::span[1]'
+    _title:
+      name: '标题'
+      xpath: '/div/a/p'
+
+player:
+  name: '播放页'
+  close:
+    name: '关闭'
+    xpath: '//div[@id="douyin-right-container"]/div[last()]/div[1][not(contains(@id,"search"))]'
+  auto:
+    name: '连播'
+    xpath: '//span[text()="连播"]/../button'
+    not:
+      name: '关闭连播'
+      xpath: '//span[text()="连播"]/../button[@class="xg-switch"]'
+    clicked:
+      name: '自动连播'
+      xpath: '//span[text()="连播"]/../button[@class="xg-switch xg-switch-checked"]'
+  author:
+    name: '用户名'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="account"]/div[1]/span'
+  dt:
+    name: '日期'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@class="account"]/div[2]/span'
+  desc:
+    name: '描述'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@data-e2e="video-desc"]/div/div/span'
+  author_url:
+    name: '主页地址'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@data-e2e="video-player-collect"]/../div[1]/div/a'
+  like:
+    name: '点赞'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@data-e2e="video-player-collect"]/../div[2]'
+    _button:
+      name: '按钮'
+      xpath: '/div/div[1]'
+    _not:
+      name: '未赞'
+      xpath: '/div[@data-e2e-state="video-player-no-digged"]'
+    _clicked:
+      name: '已赞'
+      xpath: '/div[@data-e2e-state="video-player-is-digged"]'
+    _number:
+      name: '点赞数'
+      xpath: '/div/div[2]'
+  comment:
+    name: '评论'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@data-e2e="video-player-collect"]/../div[3]'
+    _button:
+      name: '按钮'
+      xpath: '/div/div[1]'
+    _number:
+      name: '评论数'
+      xpath: '/div/div[2]'
+  collect:
+    name: '收藏'
+    xpath: '//div[@data-e2e="feed-active-video"]//div[@data-e2e="video-player-collect"]'
+    _button:
+      name: '按钮'
+      xpath: '/div[1]'
+    _not:
+      name: '未收藏'
+      xpath: '/../div[@data-e2e-state="video-player-no-collect"]'
+    _clicked:
+      name: '已收藏'
+      xpath: '/../div[@data-e2e-state="video-player-is-collected"]'
+    _number:
+      name: '收藏数'
+      xpath: 'div[2]'
+  comment_tab:
+    name: '评论板'
+    xpath: '//div[@id="semiTabcomment"]'
+  text_comment:
+    name: '全部评论'
+    xpath: '//div[@id="merge-all-comment-container"]//span[contains(text(), "全部评论")]'
+  comment_list:
+    name: '全部评论列表(最后一条是loading)'
+    xpath: '//div[@id="merge-all-comment-container"]//div[@data-e2e="comment-list"]/div[position() < last()]'
+    _expand:
+      name: '展开(不一定有)'
+      xpath: '//button/div[2]/span'
+    _author:
+      name: '评论者'
+      xpath: '/div/div[2]/div[1]'
+      _self:
+        name: '作者标记'
+        xpath: '//span[text()="作者"]'
+      _url:
+        name: '地址'
+        xpath: '/div[1]/div[1]/div[1]/a'
+      _name:
+        name: '名称'
+        xpath: '/div[1]/div[1]/div[1]/a/span'
+      _content:
+        name: '内容'
+        xpath: '/div[2]/span'
+      _like:
+        name: '点赞数'
+        xpath: '/div[4]/div/div[1]/p/span'
+    _reply_list:
+      name: '回复列表'
+      xpath: '/div/div[2]/div[2]/div'
+      _url:
+        name: ''
+        xpath: '/div[2]/div/div[1]/div[1]/div[1]/a'
+      _self:
+        name: '作者'
+        xpath: '//span[text()="作者"]'
+      _name:
+        name: ''
+        xpath: '/div[2]/div/div[1]/div[1]/div[1]/a'
+      _content:
+        name: ''
+        xpath: '/div[2]/div/div[2]/span'
+    _reply_expand:
+      name: '回复展开'
+      xpath: '/div/div[2]/div[2]/button[1]/div[2]'
+  loading:
+    name: '评论加载中(除非加载完, 否则抖音的加载中会一直存在)并在最后一个div列表中'
+    xpath: '//div[@data-e2e="comment-list"]//div[text()="加载中"]'
+  the_end:
+    name: '评论结束'
+    xpath: '//div[text()="暂时没有更多评论"]'
+  mention_list:
+    name: '提及列表'
+    xpath: '//div[@class="richtext-container"]/div[2]/div/div'
+  mention_first:
+    name: '提及列表'
+    xpath: '//div[@class="richtext-container"]/div[2]/div/div[1]'
+  input:
+    name: '输入评论'
+    xpath: '//span[contains(text(), "留下你的")]'
+
+chat:
+  name: '聊天消息'
+  xpath: '//div[@data-e2e="im-entry"]/div'
+  _butthon:
+    name: '按钮'
+    xpath: '/div[1]/div[1]'
+  _count:
+    name: '未读数量(不一定有)'
+    xpath: '/div[2]/span'
+  chat_list:
+    name: '私信列表'
+    xpath: '//div[@data-e2e="listDlg-container"]/div[2]/div/div'
+    _author:
+      name: '名称'
+      xpath: '/div/div/div[2]/div[1]/div'
+    _content:
+      name: '内容'
+      xpath: '/div/div/div[2]/div[2]/div[1]'
+    _dt:
+      name: '日期'
+      xpath: '/div/div/div[2]/div[2]/div[2]'
+    _count:
+      name: '未读数量(不一定有)'
+      xpath: '/div/div/div[3]/span'
+  username:
+    name: '名称'
+    xpath: '//span[text()="退出会话"]/../div[1]/div/div[1]/span'
+  group:
+    name: '群聊(文字不为空则为群)'
+    xpath: '//span[text()="退出会话"]/../div[1]/div/div[2]'
+  follow:
+    name: '关注(不一定有)'
+    xpath: '//span[text()="退出会话"]/following-sibling::div[text()="关注"]'
+  exit:
+    name: '退出会话'
+    xpath: '//span[text()="退出会话"]'
+  close:
+    name: '关闭对话框'
+    xpath: '//div[@data-e2e="im-entry"]/div/div[3]/div/*[name()="svg"]'
+  dialog_list:
+    name: '对话列表(前两个为空)'
+    xpath: '//div[@id="messageContent"]/div/div[position() >= 3]'
+    _content:
+      name: '内容(不一定有, 图片)'
+      xpath: '//div[@data-e2e="msg-item-content"]/div[1]/div[1]//div/span'
+    _position:
+      name: '位置(居右为自己)'
+      xpath: '/div[contains(@style,"justify-content")]'
+    _bg:
+      name: '背景(系统信息无背景)'
+      xpath: '//div[@data-e2e="msg-item-content"]/div[2]'
+    _dt:
+      name: '日期(不一定有)'
+      xpath: '/div[contains(@style,"justify-content")]/preceding-sibling::div'
+    _read:
+      name: '已读(不一定有)'
+      xpath: '//div[@data-e2e="msg-item-content"]/div[1]/div[2]'
+  input:
+    name: '输入框'
+    xpath: '//div[@class="DraftEditor-root"]'
+
+me:
+  name: '自己头像'
+  xpath: '//div[@id="douyin-header-menuCt"]/div/*[name()="pace-island"]/div/div[last()]/div/a'
+  _name:
+    name: '用户名'
+    xpath: '//p/span[text()="关注"]/../../../a'
+
+discover:
+  name: '首页'
+  url: '/discover'
+  xpath: '//*[@id="douyin-navigation"]//span[contains(text(), "首页")]'
+  container_list:
+    name: '播放列表'
+    xpath: '//*[@id="waterFallScrollContainer"]/div[not(@id="hotItem")]'
+    _live:
+      name: '直播中'
+      xpath: '//div[text()="直播中"]'
+  hot:
+    name: '热榜'
+    xpath: '//div[@id="semiTab抖音热榜"]'
+  game:
+    name: '娱乐榜'
+    xpath: '//div[@id="semiTab娱乐榜"]'
+  social:
+    name: '社会榜'
+    xpath: '//div[@id="semiTab社会榜"]'
+  challenge:
+    name: '挑战榜'
+    xpath: '//div[@id="semiTab挑战榜"]'
+  hot_list:
+    name: '榜单列表'
+    xpath: '//div[@id="hotItem"]//ul[contains(@class, "hotChangableList")]/li'
+
+search:
+  name: '搜索框'
+  xpath: '//input[@data-e2e="searchbar-input"]'
+  button:
+    name: '搜索按钮'
+    xpath: '//button/span[text()="搜索"]'
+  user:
+    name: '用户'
+    xpath: '//span[text()="用户"]'
+  user_list:
+    name: '用户列表'
+    xpath: '//div[@id="search-content-area"]/div/div/div[2]/div[3]/ul/li'
+    _url:
+      name: '地址'
+      xpath: '/div/a'
+    _number:
+      name: '抖音号'
+      xpath: '//span[contains(text(),"抖音号")]/span'

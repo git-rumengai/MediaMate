@@ -1,7 +1,4 @@
-pylint
-pytest
 python-dotenv
-
 httpx
 pydantic
 requests
@@ -11,7 +8,7 @@ fake-useragent
 pyyaml
 opencv-python
 pandas
-
+Pillow
 markdown2
 duckduckgo_search
 aiohttp

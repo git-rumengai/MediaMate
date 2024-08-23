@@ -1,0 +1,157 @@
+common:
+  loading:
+    name: '页面正常'
+    xpath: '//div[@id="feeds-replace-loading"]'
+  refresh:
+    name: '点击刷新'
+    xpath: '//div[text()="点击刷新"]'
+
+section:
+  username:
+    name: '用户名'
+    xpath: '//div[@class="user-name"]'
+  no_section:
+    name: '无笔记'
+    xpath: '//div[@id="userPostedFeeds"]//span[@class="empty-text"]'
+  section_list:
+    name: '笔记列表'
+    xpath: '//section[contains(@class,"note-item")]'
+    _url:
+      name: '链接'
+      xpath: '/div/a[2]'
+    _img:
+      name: '封面'
+      xpath: '/div/a[2]/img'
+    _title:
+      name: '标题'
+      xpath: '//a[@class="title"]/span'
+    _author:
+      name: '作者'
+      xpath: '//span[@class="name"]'
+    _like:
+      name: '点赞量'
+      xpath: '//span[@class="count"]'
+    _onlyme:
+      name: '仅自己可见'
+      xpath: '//div[@class="bottom-wrapper"]'
+  title:
+    name: '标题'
+    xpath: '//div[@id="detail-title"]'
+  desc:
+    name: '描述'
+    xpath: '//div[@id="detail-desc"]'
+  dt:
+    name: '日期'
+    xpath: '//span[@class="date"]'
+  like:
+    name: '点赞按钮'
+    xpath: '//div[@class="interact-container"]//span[@class="like-lottie"]'
+    not:
+      name: '未赞(不可点击)'
+      xpath: '//div[@class="interact-container"]//*[name()="use" and local-name()="use" and @*[local-name()="href"]="#like"]'
+    clicked:
+      name: '已赞'
+      xpath: '//div[@class="interact-container"]//*[name()="use" and local-name()="use" and @*[local-name()="href"]="#liked"]'
+  collect:
+    name: '收藏按钮'
+    xpath: '//div[@class="interact-container"]//span[@class="collect-wrapper"]'
+    not:
+      name: '未收藏(不可点击)'
+      xpath: '//div[@class="interact-container"]//*[name()="use" and local-name()="use" and @*[local-name()="href"]="#collect"]'
+    clicked:
+      name: '已收藏'
+      xpath: '//div[@class="interact-container"]//*[name()="use" and local-name()="use" and @*[local-name()="href"]="#collected"]'
+  comment:
+    name: '评论按钮'
+    xpath: '//div[@class="interact-container"]//span[@class="chat-wrapper"]'
+  close:
+    name: '关闭'
+    xpath: '//div[@class="close-circle"]/div'
+  loading:
+    name: '评论加载中'
+    xpath: '//div[@class="loading"]'
+  the_end:
+    name: '评论结束'
+    xpath: '//div[@class="end-container"]'
+  no_comment:
+    name: '无评论'
+    xpath: '//p[@class="no-comments-text"]'
+  total_text:
+    name: '评论总数'
+    xpath: '//div[@class="total"]'
+  comment_list:
+    name: '评论列表'
+    xpath: '//div[@class="comments-container"]/div[2]/div'
+    _show_more:
+      name: '展开'
+      xpath: '//div[@class="show-more"]'
+    _author:
+      name: '评论者'
+      xpath: '/div[1]//div[@class="author"]/a'
+    _self:
+      name: '作者'
+      xpath: '/div[1]//div[@class="author"]/span'
+    _content:
+      name: '评论内容'
+      xpath: '/div[1]//div[@class="content"]'
+    _like:
+      name: '点赞数'
+      xpath: '/div[1]//div[@class="like"]//span[@class="count"]'
+    _reply:
+      name: '回复数'
+      xpath: '/div[1]//div[@class="reply icon-container"]//span[@class="count"]'
+    _reply_list:
+      name: '回复列表'
+      xpath: '/div[2]/div/div'
+      _reply_author:
+        name: '回复者地址'
+        xpath: '//div[@class="author"]/a'
+      _reply_self:
+        name: '作者'
+        xpath: '/div[1]//div[@class="author"]/span'
+      _reply_content:
+        name: '回复者内容'
+        xpath: '//div[@class="content"]'
+  mention:
+    name: '提及'
+    xpath: '//div[@class="mention-container-new"]/ul/li[1]'
+
+me:
+  name: '我'
+  xpath: '//ul[@class="channel-list"]//li[4]/div/a'
+  note:
+    name: '笔记'
+    xpath: '//span[text()="笔记"]'
+  user_name:
+    name: '用户名'
+    xpath: '//div[@class="user-name"]'
+  note_list:
+    name: '笔记列表'
+    xpath: '//div[@id="userPostedFeeds"]/section'
+
+    _cover:
+      name: '封面'
+      xpath: '/div/a[2]'
+
+explore:
+  name: '发现'
+  xpath: '//li[@id="explore-guide-refresh"]/a'
+  topic_list:
+    name: '类别'
+    xpath: '//div[@class="content-container"]/div'
+
+search:
+  name: '搜索结果'
+  xpath: '//div[@id="user"]'
+  input:
+    name: '搜索框'
+    xpath: '//input[@id="search-input"]'
+  input_button:
+    name: '搜索按钮'
+    xpath: '//div[@class="input-button"]'
+  user:
+    name: '用户'
+    xpath: '//div[@id="user"]'
+  username:
+    name: '用户名'
+    xpath: '//div[@class="user-list-item"][1]//div[@class="user-name"]'

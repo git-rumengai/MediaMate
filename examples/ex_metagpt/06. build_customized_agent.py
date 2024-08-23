@@ -94,8 +94,8 @@ class RunnableCoder(Role):
 
 
 def main(msg="write a function that calculates the product of a list and run it"):
-    # role = SimpleCoder()
-    role = RunnableCoder()
+    role = SimpleCoder()
+    # role = RunnableCoder()
     logger.info(msg)
     result = asyncio.run(role.run(msg))
     logger.info(result)

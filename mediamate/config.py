@@ -130,19 +130,14 @@ class Config:
 
 class ConfigManager:
     """Configuration manager class to handle configuration data and expiration times."""
-    def __init__(self):
-        self.config_path: str = ''
+    def __init__(self, config_path: str):
+        self.config_path: str = config_path
         self.config_data = {}
         self.lock = asyncio.Lock()
         self.expiration_tasks = {}
         self.expiration_times = {}
-
-    def init(self, config_path: str):
-        """Initialize the ConfigManager with the given configuration file path."""
-        self.config_path = config_path
         self.load_config()
         self._cleanup_expired_keys()
-        return self
 
     def load_config(self):
         """Load configuration from the file or initialize an empty config."""

@@ -19,8 +19,8 @@ async def main():
     #   - 用一个提示词将所有内容整理成报告输出
     #   - 将结果整理成Report继续
     # 5. 使用 write_report 方法将结果保存到本地
-    
-    topic = "小红书新号快速涨粉操作手册"
+
+    topic = '小红书新号快速涨粉操作手册'
     role = Researcher(language="zh-cn")
     await role.run(topic)
     print(f"save report to {RESEARCH_PATH / f'{topic}.md'}.")

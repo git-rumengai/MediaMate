@@ -1,11 +1,8 @@
-import os
 import json
 from typing import Optional, Tuple
 from playwright.async_api import Page
 
-from mediamate.utils.schemas import MediaLoginInfo
 from mediamate.utils.log_manager import log_manager
-from mediamate.config import config
 from mediamate.platforms.base import BaseLocator
 
 logger = log_manager.get_logger(__file__)
@@ -13,27 +10,13 @@ logger = log_manager.get_logger(__file__)
 
 class XhsDownloader(BaseLocator):
     """ 下载数据 """
-    def __init__(self):
-        super().__init__()
-        self.download_data_dir = ''
-        self.download_user_dir = ''
-
-    def init(self, info: MediaLoginInfo):
-        """  """
-        elements_path = f'{config.PROJECT_DIR}/platforms/static/elements/xhs/creator.yaml'
-        super().init(elements_path)
-
-        self.download_data_dir = f'{config.DATA_DIR}/download/xiaohongshu/{info.account}'
-        self.download_user_dir = f'{self.download_data_dir}/user_data'
-        os.makedirs(self.download_user_dir, exist_ok=True)
-        return self
-
     async def ensure_page(self, page: Page) -> Page:
         """ """
         return page
 
     async def click_inspiration(self, page: Page, topics: Tuple[str, ...] = ()) -> Optional[Page]:
-        """  """
+        """ 点击灵感笔记 """
+        logger.info('下载笔记灵感数据')
         steps = ('inspiration', )
         await self.ensure_step_page(page, steps)
         topic_list = await self.get_visible_locators(page, 'inspiration topic_list')
@@ -58,12 +41,34 @@ class XhsDownloader(BaseLocator):
                 view_text = await view.inner_text()
                 logger.info(f'主题: {title_text}, 观看数: {view_text}')
                 result[topic_text].append({
-                    'url': url_text,
-                    'title': title_text.strip(),
-                    'view': view_text.strip()
+                    '地址': url_text,
+                    '标题': title_text.strip(),
+                    '浏览数': view_text.strip()
                 })
-        with open(f'{self.download_user_dir}/content_inspiration.json', 'w', encoding='utf-8') as f:
+        with open(f'{self.data_path.download_personal}/笔记灵感.json', 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
+            logger.info('笔记灵感数据下载完毕')
+        # 保存数据
+        return page
+
+    async def click_creator(self, page: Page) -> Optional[Page]:
+        """ 数据中心: 首页数据 """
+        logger.info('下载总览数据')
+        steps = ('datacenter', 'datacenter summary_text')
+        await self.ensure_step_page(page, steps)
+        data_list = await self.get_visible_locators(page, 'datacenter data_list')
+        data_all = await data_list.all_inner_texts()
+        data_all_text = [i.strip() for i in data_all]
+        data = {
+            '新增粉丝': data_all_text[0],
+            '主页访客': data_all_text[1],
+            '观看数': data_all_text[2],
+            '互动数': data_all_text[3],
+        }
+
+        with open(f'{self.data_path.download_personal}/数据总览.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+            logger.info('总览数据已保存')
         # 保存数据
         return page
 

@@ -1,6 +1,7 @@
 import asyncio
 import os
 import requests
+import shutil
 from pydantic import BaseModel, Field, constr, field_validator
 from typing import List
 from mediamate.agents.simple.media_gpt import MediaGPT
@@ -8,6 +9,8 @@ from mediamate.utils.log_manager import log_manager
 from mediamate.config import config
 from mediamate.utils.llm_pydantic import parse_response
 from mediamate.utils.functions import get_media_type
+from mediamate.utils.schemas import MediaInfo, MediaPath
+from mediamate.utils.enums import UrlType
 from mediamate.utils.enums import MediaType
 
 
@@ -54,95 +57,97 @@ VIDEO = 'https://www.douyin.com/aweme/v1/play/?file_id=d35918c6c3554907982cb23c6
 
 def download_media():
     """ 下载示例内容, 组图保存到xhs, 视频保存到dy """
-    media_config = config.MEDIA.get('media')
-    if media_config:
+    media_config = config.MEDIA.get('media', {})
+    for xhs in media_config.get('xhs', []):
+        media_info = MediaInfo(url=UrlType.XHS_CREATOR_URL, **xhs)
+        media_path = MediaPath(info=media_info)
+        media_gpt_image = os.path.join(media_path.upload, 'media_gpt')
+        if os.path.exists(media_gpt_image):
+            shutil.rmtree(media_gpt_image)
+        os.makedirs(media_gpt_image, exist_ok=True)
         for index, image_url in enumerate(IMAGES):
             response = requests.get(image_url, timeout=30)
-            for xhs in media_config.get('xhs', []):
-                account = xhs['account']
-                platform = xhs['platform']
-                account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/media_gpt_images'
-                os.makedirs(account_dir, exist_ok=True)
-                with open(f'{account_dir}/{index}.jpg', 'wb') as file:
-                    file.write(response.content)
-                break
-
-        response = requests.get(VIDEO, timeout=60)
-        for dy in media_config.get('dy', []):
-            account = dy['account']
-            platform = dy['platform']
-            account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/media_gpt_video'
-            os.makedirs(account_dir, exist_ok=True)
-            with open(f'{account_dir}/1.mp4', 'wb') as file:
+            with open(f'{media_gpt_image}/{index}.jpg', 'wb') as file:
                 file.write(response.content)
-            break
+        break
+
+    response = requests.get(VIDEO, timeout=60)
+    for dy in media_config.get('dy', []):
+        media_info = MediaInfo(url=UrlType.DY_CREATOR_URL, **dy)
+        media_path = MediaPath(info=media_info)
+        media_gpt_video = os.path.join(media_path.upload, 'media_gpt')
+        if os.path.exists(media_gpt_video):
+            shutil.rmtree(media_gpt_video)
+        os.makedirs(media_gpt_video, exist_ok=True)
+        with open(f'{media_gpt_video}/1.mp4', 'wb') as file:
+            file.write(response.content)
+        break
 
 
-async def get_media_gpt():
-    """  """
+async def get_media_gpt_image():
+    """ 图片识别, 基于大模型 """
     media_gpt = MediaGPT()
     parsed_data: ResponseModel
-    media_config = config.MEDIA.get('media')
-    if media_config:
-        media_gpt.init(IMAGES_PROMPT)
-        for xhs in media_config.get('xhs', []):
-            account = xhs['account']
-            platform = xhs['platform']
-            account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/media_gpt_images'
-            if not os.path.exists(account_dir):
-                logger.info(f'文件夹不存在: {account_dir}')
-                continue
+    media_config = config.MEDIA.get('media', {})
+    for xhs in media_config.get('xhs', []):
+        media_info = MediaInfo(url=UrlType.XHS_CREATOR_URL, **xhs)
+        media_path = MediaPath(info=media_info)
+        media_gpt_image = os.path.join(media_path.upload, 'media_gpt')
+        if not os.path.exists(media_gpt_image):
+            logger.info(f'文件夹不存在: {media_gpt_image}')
+            continue
 
-            images = [os.path.join(account_dir, i) for i in os.listdir(account_dir) if get_media_type(i) == MediaType.IMAGE]
-            response = media_gpt.prepare_image(images)
-            flag, parsed_data = parse_response(response, ResponseModel)
-            if not flag:
-                logger.info('llm解析结果出错, 请检查提示词或者代码逻辑')
-                continue
+        images = [os.path.join(media_gpt_image, i) for i in os.listdir(media_gpt_image) if get_media_type(i) == MediaType.IMAGE]
+        response = media_gpt.prepare_image(IMAGES_PROMPT, images)
+        flag, parsed_data = parse_response(response, ResponseModel)
+        if not flag:
+            logger.info('llm解析结果出错, 请检查提示词或者代码逻辑')
+            continue
 
-            # 发表图文的标题, 标签和地点
-            media_title = parsed_data.title
-            media_desc = parsed_data.description
-            media_labels = tuple(parsed_data.keywords)
-            media_location = '上海'
-            # 上传图片时最长等待时间
-            media_wait_minute = 3
-            media_gpt.init_media(media_title, media_desc, media_labels, media_location, media_wait_minute)
-            await media_gpt.save_to_xhs(account_dir)
-
-        media_gpt.init(VIDEO_PROMPT)
-        for dy in media_config.get('dy', []):
-            account = dy['account']
-            platform = dy['platform']
-            account_dir = f'{config.DATA_DIR}/upload/{platform}/{account}/media_gpt_video'
-            if not os.path.exists(account_dir):
-                logger.info(f'文件夹不存在: {account_dir}')
-                continue
+        metadata = {
+            '标题': parsed_data.title,
+            '描述': parsed_data.description,
+            '标签': tuple(parsed_data.keywords),
+            '地点': '上海',
+            '允许保存': '否',
+        }
+        await media_gpt.save_to_xhs(metadata)
 
 
-            video = [os.path.join(account_dir, i) for i in os.listdir(account_dir) if get_media_type(i) == MediaType.VIDEO]
-            if len(video) == 0:
-                continue
-            response = media_gpt.prepare_video(video[0])
-            flag, parsed_data = parse_response(response, ResponseModel)
-            if not flag:
-                logger.info('llm解析结果出错, 请检查提示词或者代码逻辑')
-                continue
+async def get_media_gpt_video():
+    """ 视频识别: 基于语音识别 """
+    media_gpt = MediaGPT()
+    media_config = config.MEDIA.get('media', {})
+    for dy in media_config.get('dy', []):
+        media_info = MediaInfo(url=UrlType.DY_CREATOR_URL, **dy)
+        media_path = MediaPath(info=media_info)
+        media_gpt_video = os.path.join(media_path.upload, 'media_gpt')
+        if not os.path.exists(media_gpt_video):
+            logger.info(f'文件夹不存在: {media_gpt_video}')
+            continue
 
-            # 发表图文的标题, 标签和地点
-            media_title = parsed_data.title
-            media_desc = parsed_data.description
-            media_labels = tuple(parsed_data.keywords)
-            media_location = '上海'
-            # 上传图片时最长等待时间
-            media_wait_minute = 3
-            # 发布抖音参数: 贴纸, 是否允许保存
-            media_theme = '精选好房'
-            media_download = '否'
-            media_gpt.init_media(media_title, media_desc, media_labels, media_location, media_wait_minute, media_theme, media_download)
-            await media_gpt.save_to_dy(account_dir)
+        video = [os.path.join(media_gpt_video, i) for i in os.listdir(media_gpt_video) if get_media_type(i) == MediaType.VIDEO]
+        if len(video) == 0:
+            continue
+        response = media_gpt.prepare_video(VIDEO_PROMPT, video[0])
+        flag, parsed_data = parse_response(response, ResponseModel)
+        if not flag:
+            logger.info('llm解析结果出错, 请检查提示词或者代码逻辑')
+            continue
+
+        metadata = {
+            '标题': parsed_data.title,
+            '描述': parsed_data.description,
+            '标签': tuple(parsed_data.keywords),
+            '地点': '上海',
+            '音乐': '热歌榜',
+            '贴纸': '精选好房',
+            '允许保存': '否',
+        }
+        await media_gpt.save_to_dy(metadata)
 
 
 if __name__ == '__main__':
-    # download_media()      # 只需要运行1次
-    asyncio.run(get_media_gpt())
+    download_media()      # 只需要运行1次
+    asyncio.run(get_media_gpt_image())
+    asyncio.run(get_media_gpt_video())

@@ -1,50 +1,32 @@
-import asyncio
 import re
-import os
 import json
 from typing import Optional, Tuple
 from playwright.async_api import Page
 
-from mediamate.utils.schemas import MediaLoginInfo
-from mediamate.utils.const import OPEN_URL_TIMEOUT
+from mediamate.utils.const import DEFAULT_URL_TIMEOUT
 from mediamate.utils.log_manager import log_manager
-from mediamate.config import config
 from mediamate.platforms.base import BaseLocator
+
 
 logger = log_manager.get_logger(__file__)
 
 
 class DyDownloader(BaseLocator):
     """ 下载数据 """
-    def __init__(self):
-        super().__init__()
-        self.download_data_dir = ''
-        self.download_user_dir = ''
-
-    def init(self, info: MediaLoginInfo):
-        """  """
-        elements_path = f'{config.PROJECT_DIR}/platforms/static/elements/dy/creator.yaml'
-        super().init(elements_path)
-
-        self.download_data_dir = f'{config.DATA_DIR}/download/douyin/{info.account}'
-        self.download_user_dir = f'{self.download_data_dir}/user_data'
-        os.makedirs(self.download_user_dir, exist_ok=True)
-        return self
-
     async def ensure_page(self, page: Page) -> Page:
         """ 页面重新加载, 所有步骤要重新执行 """
         home_loading = page.locator(self.parser.get_xpath('common home_loading'))
         if await home_loading.is_visible():
             logger.info('页面加载中...')
-            await home_loading.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+            await home_loading.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='hidden')
         page_loading = page.locator(self.parser.get_xpath('common page_loading'))
         if await page_loading.is_visible():
             logger.info('页面加载中...')
-            await page_loading.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+            await page_loading.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='hidden')
         page_wrong = page.locator(self.parser.get_xpath('common page_wrong'))
         if await page_wrong.is_visible():
             logger.info('页面出错, 重新加载...')
-            await page.reload(timeout=OPEN_URL_TIMEOUT)
+            await page.reload(timeout=DEFAULT_URL_TIMEOUT)
         tips_warning = page.locator(self.parser.get_xpath('common tips_warning'))
         if await page_wrong.is_visible():
             logger.info('页面警告提示...')
@@ -53,7 +35,8 @@ class DyDownloader(BaseLocator):
         return page
 
     async def click_manage(self, page: Page, num: int = 10) -> Optional[Page]:
-        """  """
+        """ 作品管理 """
+        logger.info('即将进入: 作品管理')
         steps = ('home', 'home text_datacenter', 'manage', 'manage work', 'manage all_work')
         await self.ensure_step_page(page, steps)
 
@@ -75,7 +58,7 @@ class DyDownloader(BaseLocator):
                 count += 1
                 # 滚动页面，确保新内容可以加载
                 await self.scroll(page)
-                await page.wait_for_timeout(300)  # 适当的延迟，让页面加载更多内容
+                await self.wait_medium(page)  # 适当的延迟，让页面加载更多内容
                 if await loading_end.is_visible():
                     logger.info("找到了 '没有更多作品' 的提示")
                     break
@@ -89,7 +72,7 @@ class DyDownloader(BaseLocator):
                 if len(video_cards) < num:
                     # 滚动页面，确保新内容可以加载
                     await self.scroll(page)
-                    await page.wait_for_timeout(300)  # 适当的延迟，让页面加载更多内容
+                    await self.wait_medium(page)  # 适当的延迟，让页面加载更多内容
                 else:
                     logger.info(f'滑动页面第 {count} 次, 直至获取{num}条数据')
                     break
@@ -117,32 +100,45 @@ class DyDownloader(BaseLocator):
                 like_text = await like.inner_text()
                 like_text = like_text.strip() if like_text else ''
                 item = {
-                        'cover': cover_url,
-                        'title': title_text,
-                        'dt': dt_text,
-                        'views': view_text,
-                        'comment': comment_text,
-                        'like': like_text
+                        '封面': cover_url,
+                        '标题': title_text,
+                        '日期': dt_text,
+                        '浏览数': view_text,
+                        '评论数': comment_text,
+                        '点赞数': like_text
                 }
-                logger.info(f'时间: {dt_text}, 观看数: {view_text}, 评论数: {comment_text}, 喜欢数: {like_text}, 内容: {title_text}')
+                logger.info(f'时间: {dt_text}, 观看数: {view_text}, 评论数: {comment_text}, 点赞数: {like_text}, 标题: {title_text}')
                 result.append(item)
-            with open(f'{self.download_user_dir}/content_manage.json', 'w', encoding='utf-8') as f:
+            with open(f'{self.data_path.download_personal}/作品管理.json', 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=4)
             # 保存数据
             return page
 
     async def click_datacenter(self, page: Page) -> Optional[Page]:
         """ 数据中心, 账户不一定有 """
+        logger.info('即将进入: 数据中心')
         steps = ('home', )
         await self.ensure_step_page(page, steps)
         datacenter = await self.get_locator(page, 'home text_datacenter')
         if not await datacenter.is_visible():
-            logger.info('没有找到数据中心菜单, 可能账户没有数据中心')
+            logger.info('没有找到数据中心菜单, 可能需要手动开通')
             return page
 
         steps = ('home text_datacenter', 'datacenter', 'datacenter analysis')
         await self.ensure_step_page(page, steps)
 
+        # 获取数据表现
+        summary_list = await self.get_visible_locators(page, 'home summary_list')
+        summary_list_all = await summary_list.all()
+        summary = []
+        for i in summary_list_all:
+            key = await self.get_child_visible_locator(i, 'home summary_list _key')
+            value = await self.get_child_visible_locator(i, 'home summary_list _value')
+            summary.append({key: value})
+        with open(f'{self.data_path.download_personal}/数据表现.json', 'w', encoding='utf-8') as f:
+            json.dump(summary, f, ensure_ascii=False, indent=4)
+
+        # 相关热门数据
         result = {}
         for type_list in ['topic_list', 'video_list']:
             all_data = await self.get_visible_locators(page, f'datacenter {type_list}')
@@ -167,27 +163,28 @@ class DyDownloader(BaseLocator):
                 comment_text = comment_text.strip() if comment_text else ''
                 like_text = await like.inner_text()
                 like_text = like_text.strip() if like_text else ''
-                logger.info(f'热度: {view_text}, 播放量: {play_text}, 评论量: {comment_text}, 点赞量: {like_text}')
+                logger.info(f'热度: {view_text}, 播放数: {play_text}, 评论数: {comment_text}, 点赞数: {like_text}')
                 result[type_list].append({
-                    'cover': cover_url,
-                    'title': title_text,
-                    'view': view_text,
-                    'play': play_text,
-                    'comment': comment_text,
-                    'like': like_text
+                    '封面': cover_url,
+                    '标题': title_text,
+                    '热度': view_text,
+                    '播放数': play_text,
+                    '评论数': comment_text,
+                    '点赞数': like_text
                     })
-        with open(f'{self.download_user_dir}/datecenter_video.json', 'w', encoding='utf-8') as f:
+        with open(f'{self.data_path.download_personal}/热门数据.json', 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
         return page
 
     async def click_creative_guidance(self, page: Page, words: Tuple[str, ...] = ()) -> Optional[Page]:
-        """  """
+        """ 创作灵感数据 """
+        logger.info('即将进入: 创作灵感')
         steps = ('home', 'home text_datacenter', 'creative', 'creative guidance', 'creative guidance insight')
         await self.ensure_step_page(page, steps)
 
         if not words:
             logger.info(f'无下载标签, 默认下载: 财经')
-            words = ('财经', )
+            return page
 
         showmore = await self.get_visible_locator(page, 'creative guidance showmore')
         await showmore.click()
@@ -230,28 +227,29 @@ class DyDownloader(BaseLocator):
                 comment_text = comment_text.strip() if comment_text else ''
                 like_text = await like.inner_text()
                 like_text = like_text.strip() if like_text else ''
-                logger.info(f'热度: {view_text}, 播放量: {play_text}, 评论量: {comment_text}, 点赞量: {like_text}')
+                logger.info(f'热度: {view_text}, 播放数: {play_text}, 评论数: {comment_text}, 点赞数: {like_text}')
                 result[word].append({
-                    'cover': f'https:{cover_url}',
-                    'title': title_text,
-                    'view': view_text,
-                    'play': play_text,
-                    'comment': comment_text,
-                    'like': like_text
+                    '封面': f'https:{cover_url}',
+                    '标题': title_text,
+                    '热度': view_text,
+                    '播放数': play_text,
+                    '评论数': comment_text,
+                    '点赞数': like_text
                     })
 
-        with open(f'{self.download_user_dir}/creative_guidance.json', 'w', encoding='utf-8') as f:
+        with open(f'{self.data_path.download_personal}/创作灵感.json', 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
         return page
 
     async def click_billboard(self, page: Page, words: Tuple[str, ...] = ()) -> Optional[Page]:
-        """  """
+        """ 抖音排行榜 """
+        logger.info('即将进入: 抖音排行榜')
         steps = ('home', 'home text_datacenter', 'creative', 'creative billboard')
         await self.ensure_step_page(page, steps)
 
         if not words:
-            logger.info(f'无下载标签, 默认下载: 财经')
-            words = ('财经', )
+            logger.info(f'无下载标签')
+            return page
 
         title_list = await self.get_visible_locators(page, 'creative billboard title_list')
         all_child_nodes = {}
@@ -289,7 +287,7 @@ class DyDownloader(BaseLocator):
                         content = await td.inner_text()
                     item[titles[index]] = content
                 result[word].append(item)
-        with open(f'{self.download_user_dir}/billboard.json', 'w', encoding='utf-8') as f:
+        with open(f'{self.data_path.download_personal}/抖音排行榜.json', 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
         logger.info('回到首页')
         back_home = await self.get_visible_locator(page, 'creative billboard back_home')

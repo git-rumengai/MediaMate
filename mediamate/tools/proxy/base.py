@@ -24,9 +24,7 @@ class BaseProvider(ABC):
         """
         self.provider_name = provider_name
         # self.redis_client = RedisClient().init(REDIS_PROXY_DB)
-        temp_config_path = f'{config.DATA_DIR}/proxy_pool.yaml'
-        self.client = ConfigManager()
-        self.client.init(temp_config_path)
+        self.client = ConfigManager(f'{config.DATA_DIR}/active/proxy_pool.yaml')
 
     @abstractmethod
     async def get_direct_proxies(self, num: int) -> List[str]:

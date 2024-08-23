@@ -86,9 +86,3 @@ async def screenshot(page: Page, output_image_path: str):
     image = await page.screenshot(full_page=True)
     with Image.open(io.BytesIO(image)) as img:
         img.save(output_image_path)
-
-
-
-if __name__ == '__main__':
-    result = get_useragent()
-    print(result)

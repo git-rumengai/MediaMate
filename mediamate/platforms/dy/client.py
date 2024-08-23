@@ -1,59 +1,46 @@
-import asyncio
-import os
 from typing import Optional
 from playwright.async_api import Page, async_playwright, Playwright
 
-from mediamate.utils.schemas import MediaLoginInfo
+from mediamate.utils.schemas import MediaInfo
 from mediamate.utils.log_manager import log_manager
-from mediamate.utils.enums import LocatorType
 from mediamate.platforms.dy.uploader import DyUploader
 from mediamate.platforms.dy.downloader import DyDownloader
 from mediamate.platforms.dy.operator import DyOperator
 from mediamate.platforms.dy.channel import DyChannel
 from mediamate.platforms.base import BaseClient
-from mediamate.config import config
-from mediamate.utils.const import DEFAULT_REPLY
 
 
 logger = log_manager.get_logger(__file__)
 
 
 class DyClient(BaseClient):
-    def __init__(self):
-        super().__init__()
-        self.uploader = DyUploader()
-        self.downloader = DyDownloader()
-        self.operator = DyOperator()
-        self.channel = DyChannel()
+    def __init__(self, info: MediaInfo):
+        super().__init__(info)
+        self.channel = DyChannel(info)
+        self.uploader = DyUploader(info)
+        self.downloader = DyDownloader(info)
+        self.operator = DyOperator(info)
 
-    def init(self, info: MediaLoginInfo):
-        """  """
-        super().init(info)
-        self.uploader.init(info)
-        self.downloader.init(info)
-        self.operator.init(info)
-        self.channel.init(info)
-        return self
-
-    async def start_base(self, playwright: Optional[Playwright] = None):
+    async def start_home(self, playwright: Optional[Playwright] = None):
         """启动基础流程，支持内部与外部 Playwright 上下文管理器"""
         async def _start(playwright):
-            context, page = await self.login(playwright, LocatorType.HOME)
-            if not await self.check_login_state(page):
-                logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
-                return
+            context, page = await self.login(playwright)
             try:
-                page = await self.start_discover(page)
-                page = await self.start_download(page)
-                page = await self.start_comment(page)
-                page = await self.start_follow(page)
+                page = await self._public_discover(page)
+                await self.wait_long(page)
+                page = await self._public_download(page)
+                await self.wait_long(page)
+                page = await self._public_comment(page)
+                await self.wait_long(page)
+                page = await self._public_follow(page)
+                await self.wait_long(page)
+                # 回复私信放最后(因为私信加载最慢)
+                await self._private_operate(page)
+                await self.wait_long(page)
             except Exception as e:
                 logger.error(e)
             finally:
-                # 停止跟踪并保存文件
-                trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_base.zip'
-                await context.tracing.stop(path=trace_path)
-                logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
+                await self.close_context(context, 'trace_home.zip')
 
         if playwright:
             await _start(playwright)
@@ -64,22 +51,17 @@ class DyClient(BaseClient):
     async def start_creator(self, playwright: Optional[Playwright] = None):
         """启动基础流程，支持内部与外部 Playwright 上下文管理器"""
         async def _start(playwright):
-            context, page = await self.login(playwright, LocatorType.CREATOR)
-            if not await self.check_login_state(page):
-                logger.info(f'账户未登录, 请先登录: {self.login_info.account}')
-                return
+            context, page = await self.login(playwright)
             try:
-                if self.login_info.creator.get('upload'):
-                    await self.start_upload(page)
-                await self.start_mydata(page)
-                await self.start_operate(page)
+                if self.account_info.creator.get('upload'):
+                    await self.uploader.start_upload(page)
+                    await self.wait_long(page)
+                await self._private_download(page)
+                await self.wait_long(page)
             except Exception as e:
                 logger.error(e)
             finally:
-                # 停止跟踪并保存文件
-                trace_path = f'{config.DATA_DIR}/browser/{self.login_info.platform.value}/{self.login_info.account}/trace_creator.zip'
-                await context.tracing.stop(path=trace_path)
-                logger.info('可进入查看跟踪结果: https://trace.playwright.dev/')
+                await self.close_context(context, 'trace_creator.zip')
 
         if playwright:
             await _start(playwright)
@@ -87,9 +69,9 @@ class DyClient(BaseClient):
             async with async_playwright() as playwright:
                 await _start(playwright)
 
-    async def start_mydata(self, page: Page):
-        """  """
-        downloader = self.login_info.creator.get('downloader')
+    async def _private_download(self, page: Page):
+        """ 下载私人数据 """
+        downloader = self.account_info.creator.get('download')
         if downloader:
             if downloader.get('manage'):
                 page = await self.downloader.click_manage(page)
@@ -99,134 +81,61 @@ class DyClient(BaseClient):
                 page = await self.downloader.click_creative_guidance(page, tuple(downloader.get('creative_guidance')))
             if downloader.get('billboard'):
                 page = await self.downloader.click_billboard(page, tuple(downloader.get('billboard')))
-            await page.wait_for_timeout(3000)
         return page
 
-    async def start_operate(self, page: Page):
-        """  """
-        operator_comment = self.login_info.creator.get('operator_comment')
-        if operator_comment:
-            days = operator_comment.get('days', 7)
-            default = operator_comment.get('default', DEFAULT_REPLY)
-            prompt = operator_comment.get('prompt')
-            partial_reply = self.get_reply_func(default, prompt)
-            page = await self.operator.click_comment(page, days, partial_reply)
-
-            operator_chat = self.login_info.creator.get('operator_chat')
-            default = operator_comment.get('default', DEFAULT_REPLY)
-            prompt = operator_chat.get('prompt')
-            partial_reply = self.get_reply_func(default, prompt)
-            page = await self.operator.click_chat(page, partial_reply)
-            await page.wait_for_timeout(3000)
+    async def _private_operate(self, page: Page):
+        """ 回复私人评论或私信 """
+        operator = self.account_info.home.get('operate')
+        if operator:
+            comment = operator.get('comment')
+            chat = operator.get('chat')
+            if comment:
+                page = await self.operator.click_comment(page)
+            if chat:
+                page = await self.operator.click_chat(page)
         return page
 
-    async def start_discover(self, page: Page) -> Page:
+    async def _public_discover(self, page: Page) -> Page:
         """ 随机浏览首页信息 """
-        discover = self.login_info.base.get('discover')
+        discover = self.account_info.home.get('discover')
         if discover:
             topics = discover.get('topics', ())
             times = discover.get('times', 1)
             actions = discover.get('actions', ())
             mention = discover.get('mention', ())
-            default = discover.get('default', DEFAULT_REPLY)
-            prompt = discover.get('prompt')
-            partial_reply = self.get_reply_func(default, prompt)
-            page = await self.channel.channel_discover(page, topics=topics, times=times, actions=actions, mention=mention, callback=partial_reply)
+            page = await self.channel.channel_discover(page, topics=topics, times=times, actions=actions, mention=mention)
         return page
 
-    async def start_download(self, page: Page) -> Page:
+    async def _public_download(self, page: Page) -> Page:
         """ 下载指定用户的视频信息 """
-        download = self.login_info.base.get('download')
+        download = self.account_info.home.get('download')
         if download:
             ids = download.get('ids', ())
-            data_dir = download.get('data_dir', 'videos')
-            full_dir = f'{config.DATA_DIR}/download/{self.login_info.platform.value}/{self.login_info.account}/{data_dir}'
-            os.makedirs(full_dir, exist_ok=True)
-            page = await self.channel.channel_download(page, full_dir, ids=ids)
+            page = await self.channel.channel_download(page, ids=ids)
         return page
 
-    async def start_comment(self, page: Page) -> Page:
+    async def _public_comment(self, page: Page) -> Page:
         """ 评论指定用户的视频 """
-        comment = self.login_info.base.get('comment')
+        comment = self.account_info.home.get('comment')
         if comment:
             ids = comment.get('ids', ())
             times = comment.get('times', 1)
             actions = comment.get('actions', ())
             mention = comment.get('mention', ())
             shuffle = comment.get('shuffle', False)
-            default = comment.get('default', DEFAULT_REPLY)
-            prompt = comment.get('prompt')
-            partial_reply = self.get_reply_func(default, prompt)
-            page = await self.channel.channel_comment(page, ids=ids, times=times, actions=actions, mention=mention, shuffle=shuffle, callback=partial_reply)
+            page = await self.channel.channel_comment(page, ids=ids, times=times, actions=actions, mention=mention, shuffle=shuffle)
         return page
 
-    async def start_follow(self, page: Page) -> Page:
+    async def _public_follow(self, page: Page) -> Page:
         """ 从指定用户的评论区添加好友 """
-        follow = self.login_info.base.get('follow')
+        follow = self.account_info.home.get('follow')
         if follow:
             ids = follow.get('ids', ())
             times = follow.get('times', 1)
             batch = follow.get('batch', 1)
             shuffle = follow.get('shuffle', False)
-            default = follow.get('default', DEFAULT_REPLY)
-            prompt = follow.get('prompt')
-            partial_reply = self.get_reply_func(default, prompt)
-            page = await self.channel.channel_follow(page, msg=default, ids=ids, times=times, batch=batch, shuffle=shuffle, callback=partial_reply if prompt else None)
+            page = await self.channel.channel_target(page, ids=ids, times=times, batch=batch, shuffle=shuffle)
         return page
-
-    async def upload_text(self, page: Page) -> Optional[Page]:
-        """  """
-        title = self.uploader.metadata_config.get('标题')
-        describe = self.uploader.metadata_config.get('描述')
-        labels = self.uploader.metadata_config.get('标签')
-        location = self.uploader.metadata_config.get('地点')
-        theme = self.uploader.metadata_config.get('贴纸')
-        wait_minute = self.uploader.metadata_config.get('图片超时报错', 3)
-        download = self.uploader.metadata_config.get('允许保存')
-        download = True if download == '是' else False
-        try:
-            page = await self.uploader.click_note(page)
-            page = await self.uploader.click_upload_image(page, wait_minute)
-            page = await self.uploader.write_title(page, title)
-            page = await self.uploader.write_describe(page, describe, labels)
-            page = await self.uploader.set_location(page, location)
-            page = await self.uploader.set_theme(page, theme)
-            page = await self.uploader.set_download(page, download)
-            page = await self.uploader.set_permission(page)
-            page = await self.uploader.set_time(page)
-            page = await self.uploader.click_publish(page)
-            logger.info('图文发布成功, 5s自动返回')
-            await page.wait_for_timeout(3000)
-            return page
-        except Exception as e:
-            logger.error(f'上传图文报错: {e}')
-
-    async def upload_video(self, page: Page) -> Optional[Page]:
-        """  """
-        title = self.uploader.metadata_config.get('标题')
-        describe = self.uploader.metadata_config.get('描述')
-        labels = self.uploader.metadata_config.get('标签')
-        location = self.uploader.metadata_config.get('地点')
-        theme = self.uploader.metadata_config.get('贴纸')
-        wait_minute = self.uploader.metadata_config.get('视频超时报错', 10)
-        download = self.uploader.metadata_config.get('允许保存')
-        download = True if download == '是' else False
-        try:
-            page = await self.uploader.click_note(page)
-            page = await self.uploader.click_upload_video(page, wait_minute)
-            page = await self.uploader.write_title(page, title)
-            page = await self.uploader.write_describe(page, describe, labels)
-            page = await self.uploader.set_location(page, location)
-            page = await self.uploader.set_theme(page, theme)
-            page = await self.uploader.set_download(page, download)
-            page = await self.uploader.set_permission(page)
-            page = await self.uploader.set_time(page)
-            page = await self.uploader.click_publish(page)
-            logger.info('视频发布成功, 3s自动返回')
-            await page.wait_for_timeout(3000)
-            return page
-        except Exception as e:
-            logger.error(f'上传视频报错: {e}')
 
 
 __all__ = ['DyClient']

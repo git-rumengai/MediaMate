@@ -11,7 +11,7 @@ async def main():
     # 4. 重新设置set_actions和max_react_loop
     # 5. 等待子目录创建的action全部执行完毕
     # 6.
-    topic = "撩妹教程"
+    topic = '撩妹教程'
     role = TutorialAssistant(language="Chinese")
     await role.run(topic)
 

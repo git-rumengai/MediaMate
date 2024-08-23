@@ -8,24 +8,13 @@ logger = log_manager.get_logger(__file__)
 
 
 class Chat(BaseMarket):
-    def __init__(self, ):
-       super().__init__()
-
-    def init(self, api_key, url: str='', model: str=''):
-        url = url or 'https://api.302.ai/v1/chat/completions'
+    def __init__(self, api_key: str, model: str = ''):
         model = model or 'gpt-4o-mini'
-        super().init(api_key, url, model)
-        self.api_key = api_key
-        self.url = url
-        self.model = model
-        return self
+        super().__init__(api_key=api_key, url='https://api.302.ai/v1/chat/completions', model=model)
 
     def get_payload(self, message: str) -> str:
-       """  """
-       return json.dumps({
-          "model": self.model,
-          "message": message
-       })
+        """  """
+        return json.dumps({"model": self.model, "message": message})
 
     def get_headers(self) -> dict:
         """  """
@@ -39,8 +28,8 @@ class Chat(BaseMarket):
     def get_response(self, message: str) -> str:
         """  """
         response = requests.request(
-           'POST',
-            self.url,
+            method='POST',
+            url=self.url,
             headers=self.get_headers(),
             data=self.get_payload(message)
         )

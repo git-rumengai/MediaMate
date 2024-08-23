@@ -15,7 +15,6 @@ class BaseVerify:
         """
         生成二次贝塞尔曲线路径
         :param start_pos: 起点 (x, y)
-        :param mid_pos: 中间点 (x, y)
         :param end_pos: 终点 (x, y)
         :param steps: 路径点数
         :return: 路径点列表 [(x1, y1), (x2, y2), ...]
@@ -153,22 +152,15 @@ class RotateVerify(BaseVerify):
                 best_rotated_fg = rotated_fg
 
         # 输出最佳匹配角度和匹配得分
-        logger.info(f"Best matching angle: {best_angle} degrees")
-        logger.info(f"Best matching score: {best_score}")
-
+        logger.info(f"最佳角度: {best_angle} degrees, 分数: {best_score}")
         # 获取背景图像的宽度
         bg_width = background_img.shape[1]
         # 计算按钮平移量（以像素为单位）
         button_position = (best_angle / 360) * bg_width
-        logger.info(f"Calculated button position (horizontal translation): {button_position}")
 
         # 保存最佳匹配的旋转图像
         if matched_path:
             cv2.imwrite(matched_path, best_rotated_fg)
-            logger.info(f"Best rotated foreground image saved to {matched_path}")
+            logger.info(f"结果已保存 {matched_path}")
         return button_position
 
-
-if __name__ == '__main__':
-    rv = RotateVerify()
-    rv.calculate('1.jpg', '2.png', 'result.png')

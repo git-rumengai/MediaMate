@@ -1,14 +1,12 @@
-import asyncio
 import os
 import re
 import glob
 from typing import Optional, Tuple, List
 from playwright.async_api import Page
 
-from mediamate.utils.const import OPEN_URL_TIMEOUT
+from mediamate.utils.const import DEFAULT_URL_TIMEOUT, DEFAULT_VIDEO_WAIT, DEFAULT_IMAGE_WAIT
 from mediamate.utils.log_manager import log_manager
-from mediamate.utils.schemas import MediaLoginInfo
-from mediamate.config import config, ConfigManager
+from mediamate.config import ConfigManager
 from mediamate.utils.enums import MediaType
 from mediamate.platforms.base import BaseUploader
 
@@ -21,56 +19,94 @@ class DyUploader(BaseUploader):
     VIDEO_EXTENSIONS = ['*.mp4', '*.m4v', '*.avi', '*.mov', '*.webm', '*.flv', '*.mkv']
     IMAGE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.png', '*.bmp', '*.tif',  '*.webp']
 
-    def __init__(self):
-        super().__init__()
-        self.upload_data_dir: str = ''
-        self.metadata_config: ConfigManager = ConfigManager()
-
-    def init(self, info: MediaLoginInfo):
-        """ 抖音默认以发视频为主 """
-        elements_path = f'{config.PROJECT_DIR}/platforms/static/elements/dy/creator.yaml'
-        super().init(elements_path)
-
-        self.upload_data_dir = f'{config.DATA_DIR}/upload/douyin/{info.account}'
-        os.makedirs(self.upload_data_dir, exist_ok=True)
-        return self
-
-    def check_upload_type(self) -> Tuple[MediaType, List[str]]:
+    def check_upload_type(self, data_dir: str) -> Tuple[MediaType, List[str]]:
         """ 检查上传作品类型, 视频优先 """
-        self.metadata_config.init(f'{self.upload_data_dir}/metadata.yaml')
-        title = self.metadata_config.get('标题')
-        describe = self.metadata_config.get('描述')
+        metadata_config = ConfigManager(os.path.join(data_dir, 'metadata.yaml'))
+        title = metadata_config.get('标题')
+        describe = metadata_config.get('描述')
         if not (title and describe):
-            raise ValueError(f'发表信息数据不完整, : {self.upload_data_dir}')
+            raise ValueError(f'发表信息数据不完整, : {data_dir}')
 
         video_files = []
         for extension in self.VIDEO_EXTENSIONS:
-            video_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+            video_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
         if video_files:
             return MediaType.VIDEO, video_files
         else:
             image_files = []
             for extension in self.IMAGE_EXTENSIONS:
-                image_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+                image_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
             if image_files:
                 return MediaType.IMAGE, image_files
             else:
-                raise ValueError(f'没有视频和图片文件, 无法发布: {self.upload_data_dir}')
+                raise ValueError(f'没有视频和图片文件, 无法发布: {data_dir}')
+
+    async def upload_text(self, page: Page, data_dir: str) -> Optional[Page]:
+        """  """
+        metadata_config = ConfigManager(os.path.join(data_dir, 'metadata.yaml'))
+        title = metadata_config.get('标题')
+        describe = metadata_config.get('描述')
+        labels = metadata_config.get('标签')
+        music = metadata_config.get('音乐')
+        location = metadata_config.get('地点')
+        theme = metadata_config.get('贴纸')
+        download = metadata_config.get('允许保存')
+        download = True if download == '是' else False
+
+        page = await self.click_note(page)
+        page = await self.click_upload_image(page, data_dir)
+        page = await self.write_title(page, title)
+        page = await self.write_describe(page, describe, labels)
+        page = await self.set_music(page, music)
+        page = await self.set_location(page, location)
+        page = await self.set_theme(page, theme)
+        page = await self.set_download(page, download)
+        page = await self.set_permission(page)
+        page = await self.set_time(page)
+        page = await self.click_publish(page)
+        logger.info('图文发布成功, 3s自动返回')
+        await self.wait_long(page, 3)
+        return page
+    
+    async def upload_video(self, page: Page, data_dir: str) -> Optional[Page]:
+        """  """
+        metadata_config = ConfigManager(os.path.join(data_dir, 'metadata.yaml'))
+        title = metadata_config.get('标题')
+        describe = metadata_config.get('描述')
+        labels = metadata_config.get('标签')
+        location = metadata_config.get('地点')
+        theme = metadata_config.get('贴纸')
+        download = metadata_config.get('允许保存')
+        download = True if download == '是' else False
+
+        page = await self.click_note(page)
+        page = await self.click_upload_video(page, data_dir)
+        page = await self.write_title(page, title)
+        page = await self.write_describe(page, describe, labels)
+        page = await self.set_location(page, location)
+        page = await self.set_theme(page, theme)
+        page = await self.set_download(page, download)
+        page = await self.set_permission(page)
+        page = await self.set_time(page)
+        page = await self.click_publish(page)
+        logger.info('视频发布成功, 3s自动返回')
+        await self.wait_long(page, 3)
+        return page
 
     async def ensure_page(self, page: Page) -> Page:
         """ 页面重新加载, 所有步骤要重新执行 """
         home_loading = page.locator(self.parser.get_xpath('common home_loading'))
         if await home_loading.is_visible():
             logger.info('页面加载中...')
-            await home_loading.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+            await home_loading.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='hidden')
         page_loading = page.locator(self.parser.get_xpath('common page_loading'))
         if await page_loading.is_visible():
             logger.info('页面加载中...')
-            await page_loading.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+            await page_loading.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='hidden')
         page_wrong = page.locator(self.parser.get_xpath('common page_wrong'))
         if await page_wrong.is_visible():
             logger.info('页面出错, 重新加载...')
-            await page.reload(timeout=OPEN_URL_TIMEOUT)
+            await page.reload(timeout=DEFAULT_URL_TIMEOUT)
 
         tips_warning = page.locator(self.parser.get_xpath('common tips_warning'))
         if await page_wrong.is_visible():
@@ -90,7 +126,7 @@ class DyUploader(BaseUploader):
             await tips_youknow.click()
         return page
 
-    async def click_upload_video(self, page: Page, wait_minute: int = 10) -> Optional[Page]:
+    async def click_upload_video(self, page: Page, data_dir: str) -> Optional[Page]:
         """  """
         logger.info('点击发布视频')
         steps = ('upload video', )
@@ -98,7 +134,7 @@ class DyUploader(BaseUploader):
 
         video_files = []
         for extension in DyUploader.VIDEO_EXTENSIONS:
-            video_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+            video_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
 
         # 如果没有视频文件，返回空列表
         if video_files:
@@ -110,18 +146,18 @@ class DyUploader(BaseUploader):
                 logger.warning(f'视频文件超过一个, 默认选择最小的视频文件上传: {file}')
 
             input_video = page.locator(self.parser.get_xpath('upload video_input'))
-            await input_video.wait_for(timeout=OPEN_URL_TIMEOUT, state='attached')
+            await input_video.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='attached')
             await input_video.set_input_files(file)
 
             logger.info(f'准备上传: {file}')
             cancel_video = await self.get_locator(page, 'upload video_cancel')
-            await cancel_video.wait_for(timeout=OPEN_URL_TIMEOUT * 3, state='visible')
+            await cancel_video.wait_for(timeout=DEFAULT_URL_TIMEOUT * 3, state='visible')
             logger.info(f'视频上传中...')
-            await cancel_video.wait_for(timeout=OPEN_URL_TIMEOUT * wait_minute, state='hidden')
+            await cancel_video.wait_for(timeout=DEFAULT_URL_TIMEOUT * DEFAULT_VIDEO_WAIT, state='hidden')
             logger.info(f'文件上传成功: {file}')
             return page
 
-    async def click_upload_image(self, page: Page, wait_minute: int = 3) -> Optional[Page]:
+    async def click_upload_image(self, page: Page, data_dir: str) -> Optional[Page]:
         """  """
         logger.info('点击发布图文')
         steps = ('upload image', )
@@ -129,7 +165,7 @@ class DyUploader(BaseUploader):
 
         image_files = []
         for extension in DyUploader.IMAGE_EXTENSIONS:
-            image_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+            image_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
         # 如果没有文件，返回空列表. dy最多上传35张图片
         if image_files:
             if len(image_files) > 35:
@@ -137,11 +173,11 @@ class DyUploader(BaseUploader):
 
             file = image_files[0]
             input_image = await self.get_locator(page, 'upload image_input')
-            await input_image.wait_for(timeout=OPEN_URL_TIMEOUT, state='attached')
+            await input_image.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='attached')
             await input_image.set_input_files(file)
 
             image_added = await self.get_visible_locator(page, 'upload image_added')
-            await image_added.wait_for(timeout=OPEN_URL_TIMEOUT * wait_minute, state='visible')
+            await image_added.wait_for(timeout=DEFAULT_IMAGE_WAIT * DEFAULT_URL_TIMEOUT, state='visible')
             logger.info(f'一共要上传{len(image_files)}张图片, 首张图片上传成功: {file}')
             for index, file in enumerate(image_files[1:]):
                 image_continue = await self.get_visible_locator(page, 'upload image_continue')
@@ -172,7 +208,7 @@ class DyUploader(BaseUploader):
             input_describe = await self.get_visible_locator(page, 'upload input_describe')
             await input_describe.click()
             await page.keyboard.type(content)
-
+            # 添加标签
             if len(labels) > 0:
                 logger.info('填写标签【最多5个】')
                 # 移动光标到文本末尾
@@ -190,8 +226,49 @@ class DyUploader(BaseUploader):
                     await label1.click()
             else:
                 logger.info('标签为空')
+
+            # 添加活动(自动选择前两个)
+            activity = await self.get_locator(page, 'upload input_describe activity_list')
+            if await activity.count() > 1:
+                activity_all = await activity.all()
+                for i in activity_all[:2]:
+                    add = await self.get_child_visible_locator(i, 'upload input_describe activity_list _add')
+                    await add.click()
+                    await self.wait_short(page)
         else:
             logger.info('描述为空')
+        return page
+
+    async def set_music(self, page: Page, music: str = '') -> Optional[Page]:
+        """  """
+        if music:
+            logger.info(f'设置音乐: {music}')
+            click_music = await self.get_locator(page, 'upload click_music')
+            if await click_music.is_visible():
+                await click_music.click()
+                topic_list = await self.get_visible_locators(page, 'upload click_music topic_list')
+                topic_list_all = await topic_list.all()
+                # 如果输入的是榜单则点击榜单
+                flag = True
+                for topic in topic_list_all:
+                    topic_text = await topic.inner_text()
+                    if music in topic_text:
+                        await topic.click()
+                        flag = False
+                        break
+                if flag:
+                    input_button = await self.get_visible_locator(page, 'upload click_music input')
+                    await input_button.click()
+                    await input_button.fill(music)
+                music_list = await self.get_visible_locators(page, 'upload click_music music_list')
+                await music_list.first.hover()
+                use = await self.get_child_visible_locator(music_list.first, 'upload click_music music_list _use')
+                await use.click()
+                await topic_list.wait_for(state='hidden')
+            else:
+                logger.info('无音乐按钮, 忽略')
+        else:
+            logger.info('不设置音乐')
         return page
 
     async def set_location(self, page: Page, site: str = '') -> Optional[Page]:
@@ -202,7 +279,7 @@ class DyUploader(BaseUploader):
             click_location = await self.get_visible_locator(page, 'upload click_location')
             await click_location.click()
             input_location = page.locator(self.parser.get_xpath('upload click_location input_location'))
-            await input_location.wait_for(timeout=OPEN_URL_TIMEOUT, state='attached')
+            await input_location.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='attached')
             await page.keyboard.type('1')
             await page.keyboard.press('Backspace')
             await page.keyboard.type(site)
@@ -213,7 +290,7 @@ class DyUploader(BaseUploader):
                 await input_location.clear()
             else:
                 await locator.click()
-                await locator.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+                await locator.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='hidden')
         else:
             logger.info('不设置地点')
         return page
@@ -238,7 +315,7 @@ class DyUploader(BaseUploader):
             await input_theme.fill(theme)
             follow_counts = []
             theme_list = await self.get_visible_locators(page, 'upload click_theme theme_list')
-            await page.wait_for_timeout(100)
+            await self.wait_short(page)
             theme_list = await theme_list.all()
             for index, theme in enumerate(theme_list):
                 content = await self.get_child_visible_locator(theme, 'upload click_theme theme_list _content')
@@ -283,7 +360,7 @@ class DyUploader(BaseUploader):
         # 先等待视频检测完毕
         detecting = page.locator(self.parser.get_xpath('upload publish detecting'))
         detect_failed = page.locator(self.parser.get_xpath('upload publish detect_failed'))
-        await detecting.wait_for(timeout=OPEN_URL_TIMEOUT, state='hidden')
+        await detecting.wait_for(timeout=DEFAULT_URL_TIMEOUT, state='hidden')
         if await detect_failed.is_visible():
             logger.warning('视频检测失败, 继续发布视频')
         publish = await self.get_visible_locator(page, 'upload publish sure')

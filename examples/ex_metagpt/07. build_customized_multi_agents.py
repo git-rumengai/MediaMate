@@ -122,7 +122,13 @@ async def main(
     add_human: bool = False,
 ):
     logger.info(idea)
-
+    # 1. 创建team
+    # 2. 添加roles
+    # 3. 设置投资额
+    # 4. 启动项目
+    # 5. 运行环境
+    #   - 在role._observe中如果没有与自身相关的消息, 则会等待
+    #   - 所有role按逻辑执行
     team = Team()
     team.hire(
         [

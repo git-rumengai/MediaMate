@@ -8,7 +8,7 @@ from mimetypes import guess_type
 from mediamate.utils.functions import get_media_type
 from mediamate.utils.enums import MediaType
 from mediamate.utils.log_manager import log_manager
-from mediamate.tools.api_market.recognizer import ImageRecognizer, MediaRecognizer
+from mediamate.tools.api_market.recognizer import OpenAIImageRecognizer, OpenAIAudioRecognizer
 
 
 logger = log_manager.get_logger(__file__)
@@ -16,15 +16,9 @@ logger = log_manager.get_logger(__file__)
 
 class ConvertToText:
     """ 将图片/语音/视频转为文本 """
-    def __init__(self):
-        self.image_recognizer = ImageRecognizer()
-        self.media_recognizer = MediaRecognizer()
-
-    def init(self, image_recognizer: Optional[ImageRecognizer] = None, media_recognizer: Optional[MediaRecognizer] = None):
-        """  """
-        self.image_recognizer = image_recognizer
-        self.media_recognizer  = media_recognizer
-        return self
+    def __init__(self, image_recognizer: Optional[OpenAIImageRecognizer] = None, audio_recognizer: Optional[OpenAIAudioRecognizer] = None):
+        self.image_recognizer: OpenAIImageRecognizer = image_recognizer
+        self.audio_recognizer: OpenAIAudioRecognizer = audio_recognizer
 
     def read_file(self, filename: str) -> str:
         """  """
@@ -88,7 +82,7 @@ class ConvertToText:
     def read_audio_file(self, filename: str) -> str:
         """  """
         try:
-            response = self.media_recognizer.get_response(filename)
+            response = self.audio_recognizer.get_response(filename)
             return response
         except Exception as e:
             return f"读取音频文件时发生错误. {filename}, Error: {e}"
@@ -125,41 +119,7 @@ class ConvertToText:
         try:
             audio_output_path = self.extract_audio_from_video(filename)
             logger.info(f'视频要先转为音频文件: {audio_output_path}')
-            response = self.media_recognizer.get_response(audio_output_path)
+            response = self.audio_recognizer.get_response(audio_output_path)
             return response
         except Exception as e:
             return f"读取视频件时发生错误. {filename}, Error: {e}"
-
-
-if __name__ == '__main__':
-    from mediamate.config import config
-
-    api_key = config.get('302__APIKEY')
-    image_recognizer = ImageRecognizer().init(api_key=api_key)
-    audio_recognizer = MediaRecognizer().init(api_key=api_key)
-    ctt = ConvertToText()
-    ctt.init(image_recognizer, audio_recognizer)
-
-    # filename = r'C:\Users\Admin\Desktop\2.png'
-    # result = ctt.read_file(filename)
-    # print(result)
-    #
-    # filename = r'C:\Users\Admin\Desktop\雄鹰.wav'
-    # result = ctt.read_file(filename)
-    # print(result)
-    #
-    # filename = r'C:\Users\Admin\Desktop\download.mp4'
-    # result = ctt.read_file(filename)
-    # print(result)
-
-    # url = 'https://ss2.meipian.me/users/2531394/8b3ab230-4016-11eb-a090-d76407546a82.jpg'
-    # result = ctt.read_url(url, 'image')
-    # print(result)
-
-    # url = 'https://c97f3361a1c971323738e24f451a0225.r2.cloudflarestorage.com/fish-platform-data/task/7c42baa3e702406d8a4f03c0261a6db0.wav?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=45aaffe6f2c5f28b260e2165001da8ad%2F20240814%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240814T060940Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=055a9fab712d502bb32d8dd2a7fcb1b1cdb9161c702262058008e7def7bea0be'
-    # result = ctt.read_url(url, 'audio')
-    # print(result)
-    #
-    # url = 'https://v3-web-prime.douyinvod.com/video/tos/cn/tos-cn-ve-15/oQByANHsMF2LVAPQImEDfZfoE1PWgOIFADxbR9/?a=6383&ch=0&cr=0&dr=0&er=0&cd=0%7C0%7C0%7C0&cv=1&br=602&bt=602&cs=0&ds=3&ft=p96FMRLaffPdOW~-N12NvAq-antLjrK-xBl.Rka79QeVvjVhWL6&mime_type=video_mp4&qs=1&rc=OWc1NTM7N2RkPDk2PDNmN0BpMzo0a3k5cjlpdDMzNGkzM0BjNTFeXzItNjAxYl4uNWEuYSNoLzZeMmRzNGxgLS1kLTBzcw%3D%3D&btag=c0000e00028000&cquery=100b&dy_q=1723615895&expire=1723619656&feature_id=46a7bb47b4fd1280f3d3825bf2b29388&l=202408141411351445EA8D4C29130A1401&ply_type=4&policy=4&signature=0b960fb95825c7fa0120e3b4a91d4c92&tk=webid&webid=3c3e9d4a635845249e00419877a3730e2149197a63ddb1d8525033ea2b3354c2fcb74766499cf3c6f79cb8aaebb8ad2f238d9adf46a107ca2cab64707cde3df42bbe0ddf12d441dcd90a0b8277bb88cf9e8e238a05cdb6085c040435f1bde20f7b466e80aa73aecfc457e3d188b457bcf2ea3af492b50f2cebfa4fc6dc1381a91632e2ce795d99aa474d7ce90f615e1189052baa9b1af5df6f12fb2b62740db6-dcc473be9bc3e0183ca718aacb4f0676'
-    # result = ctt.read_url(url, 'video')
-    # print(result)

@@ -4,13 +4,13 @@ __pycache__/
 *$py.class
 
 .idea/
+autoenv/
 data/
 MetaGPT/
 .base.env
 .base.media.yaml
 .env
 .media.yaml
-
 
 # C extensions
 *.so

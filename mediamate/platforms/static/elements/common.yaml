@@ -1,5 +1,5 @@
 login:
-  dy_base:
+  dy_home:
     url: ''
     name: '抖音主页登录'
     xpath: '//div[@id="douyin-header-menuCt"]//a[@href="//www.douyin.com/user/self"]'
@@ -7,7 +7,7 @@ login:
     url: ''
     name: '抖音创作者页登录'
     xpath: '//div[@id="header-avatar"]'
-  xhs_base:
+  xhs_home:
     url: ''
     name: '小红书主页登录'
     xpath: '//ul[@class="channel-list"]//li[@class="user side-bar-component"]'
@@ -16,13 +16,13 @@ login:
     xpath: '//div[contains(@class,"user-info")]'
 
 logout:
-  dy_base:
+  dy_home:
     name: '抖音主页登出'
     xpath: '//span[contains(@class, "semi-button-content")]/p[text()="登录"]'
   dy_creator:
     name: '抖音创作者页登出'
     xpath: '//div[contains(@class, "login-card-double-header")]/div[text()="我是创作者"]'
-  xhs_base:
+  xhs_home:
     name: '小红书主页登出'
     xpath: '//ul[@class="channel-list"]//button[@id="login-btn"]'
   xhs_creator:
@@ -31,16 +31,16 @@ logout:
 
 dy_verify:
   name: '滑窗标题'
-  xpath: '//div[contains(@class, "请完成下列验证")]'
+  xpath: '//div[contains(text(), "请完成下列验证")]'
   bg_img:
     name: '背景图'
-    xpath: 'img.captcha-verify-image'
+    xpath: '//img[@id="captcha_verify_image"]'
   gap_img:
     name: '滑动图'
-    xpath: 'img#captcha-verify_img_slide'
+    xpath: '//img[@id="captcha-verify_img_slide"]'
   bar:
     name: '滑动按钮'
-    xpath: 'div.captcha-slider-btn'
+    xpath: '//div[@class="captcha-slider-btn"]'
 
 xhs_verify:
   name: '验证码'

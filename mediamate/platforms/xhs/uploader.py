@@ -1,16 +1,13 @@
-import asyncio
 import os
 import glob
-import random
 from typing import Optional, Tuple, List
 from playwright.async_api import Page
 
-from mediamate.utils.const import OPEN_URL_TIMEOUT
 from mediamate.utils.log_manager import log_manager
-from mediamate.utils.schemas import MediaLoginInfo
-from mediamate.config import config, ConfigManager
 from mediamate.utils.enums import MediaType
+from mediamate.utils.const import DEFAULT_URL_TIMEOUT
 from mediamate.platforms.base import BaseUploader
+from mediamate.config import ConfigManager
 
 
 logger = log_manager.get_logger(__file__)
@@ -21,59 +18,83 @@ class XhsUploader(BaseUploader):
     VIDEO_EXTENSIONS = ['*.mp4', '*.mov', '*.flv', '*.f4v', '*.mkv', '*.rm', '*.rmvb', '*.m4v', '*.mpg', '*.mpeg', '*.ts']
     IMAGE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.png', '*.webp']
 
-    def __init__(self):
-        super().__init__()
-        self.upload_data_dir: str = ''
-        self.metadata_config: ConfigManager = ConfigManager()
-
-    def init(self, info: MediaLoginInfo):
+    def check_upload_type(self, data_dir: str) -> Tuple[MediaType, List[str]]:
         """  """
-        elements_path = f'{config.PROJECT_DIR}/platforms/static/elements/xhs/creator.yaml'
-        super().init(elements_path)
-
-        self.upload_data_dir = f'{config.DATA_DIR}/upload/xiaohongshu/{info.account}'
-        os.makedirs(self.upload_data_dir, exist_ok=True)
-        return self
-
-    def check_upload_type(self) -> Tuple[MediaType, List[str]]:
-        """  """
-        self.metadata_config.init(f'{self.upload_data_dir}/metadata.yaml')
-        title = self.metadata_config.get('标题')
-        describe = self.metadata_config.get('描述')
+        metadata_config = ConfigManager(os.path.join(data_dir, 'metadata.yaml'))
+        title = metadata_config.get('标题')
+        describe = metadata_config.get('描述')
         if not (title and describe):
-            raise ValueError(f'发表信息数据不完整: {self.upload_data_dir}')
+            raise ValueError(f'发表信息数据不完整: {data_dir}')
 
         image_files = []
         for extension in self.IMAGE_EXTENSIONS:
-            image_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+            image_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
         if image_files:
             return MediaType.IMAGE, image_files
         else:
             video_files = []
             for extension in self.VIDEO_EXTENSIONS:
-                video_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+                video_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
             if video_files:
                 return MediaType.VIDEO, video_files
             else:
-                raise ValueError(f'没有图片和视频文件, 无法发布: {self.upload_data_dir}')
+                raise ValueError(f'没有图片和视频文件, 无法发布: {data_dir}')
+
+    async def upload_text(self, page: Page, data_dir: str) -> Optional[Page]:
+        """  """
+        metadata_config = ConfigManager(os.path.join(data_dir, 'metadata.yaml'))
+        title = metadata_config.get('标题')
+        describe = metadata_config.get('描述')
+        labels = metadata_config.get('标签')
+        location = metadata_config.get('地点')
+
+        page = await self.click_upload_image(page, data_dir)
+        page = await self.write_title(page, title)
+        page = await self.write_describe(page, describe, labels)
+        page = await self.set_location(page, location)
+        page = await self.set_permission(page)
+        page = await self.set_time(page)
+        page = await self.click_publish(page)
+        logger.info('图文发布成功, 3s自动返回')
+        await self.wait_long(page, 3)
+        return page
+
+    async def upload_video(self, page: Page, data_dir: str) -> Optional[Page]:
+        """  """
+        metadata_config = ConfigManager(os.path.join(data_dir, 'metadata.yaml'))
+        title = metadata_config.get('标题')
+        describe = metadata_config.get('描述')
+        labels = metadata_config.get('标签')
+        location = metadata_config.get('地点')
+
+        page = await self.click_upload_video(page, data_dir)
+        page = await self.write_title(page, title)
+        page = await self.write_describe(page, describe, labels)
+        page = await self.set_location(page, location)
+        page = await self.set_permission(page)
+        page = await self.set_time(page)
+        page = await self.click_publish(page)
+        logger.info('视频发布成功, 3s自动返回')
+        await self.wait_long(page, 3)
+        return page
 
     async def ensure_page(self, page: Page) -> Page:
         """  """
         return page
 
-    async def click_upload_video(self, page: Page, wait_minute: int = 15) -> Optional[Page]:
+    async def click_upload_video(self, page: Page, data_dir: str) -> Optional[Page]:
         """  """
         logger.info('点击上传视频')
         steps = ('publish', )
         await self.ensure_step_page(page, steps)
         # 如果不刷新页面, 页面元素有未知变动, 后边无法填写标签
-        await page.reload(timeout=OPEN_URL_TIMEOUT)
+        await page.reload(timeout=DEFAULT_URL_TIMEOUT)
         steps = ('publish', 'publish video')
         await self.ensure_step_page(page, steps)
 
         video_files = []
         for extension in self.VIDEO_EXTENSIONS:
-            video_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+            video_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
         # 如果没有视频文件，返回空列表
         if video_files:
             # 获取每个视频文件的大小并排序
@@ -87,23 +108,23 @@ class XhsUploader(BaseUploader):
             await video_input.set_input_files(file)
             logger.info(f'正在上传: {file}')
             video_finish = await self.get_locator(page, 'publish video finish')
-            await video_finish.wait_for(timeout=wait_minute * OPEN_URL_TIMEOUT, state='visible')
+            await video_finish.wait_for(timeout=self.default_video_wait * DEFAULT_URL_TIMEOUT, state='visible')
             logger.info(f'文件上传成功: {file}')
             return page
 
-    async def click_upload_image(self, page: Page, wait_minute: int = 3) -> Optional[Page]:
+    async def click_upload_image(self, page: Page, data_dir: str) -> Optional[Page]:
         """  """
         logger.info('点击上传图文')
         steps = ('publish', )
         await self.ensure_step_page(page, steps)
         # 如果不刷新页面, 页面元素有未知变动, 后边无法填写标签
-        await page.reload(timeout=OPEN_URL_TIMEOUT)
+        await page.reload(timeout=DEFAULT_URL_TIMEOUT)
         steps = ('publish image', )
         await self.ensure_step_page(page, steps)
 
         image_files = []
         for extension in self.IMAGE_EXTENSIONS:
-            image_files.extend(glob.glob(os.path.join(self.upload_data_dir, '**', extension), recursive=True))
+            image_files.extend(glob.glob(os.path.join(data_dir, '**', extension), recursive=True))
         # 如果没有文件，返回空列表
         if image_files:
             if len(image_files) > 18:
@@ -113,9 +134,8 @@ class XhsUploader(BaseUploader):
             await image_input.set_input_files(file)
 
             logger.info(f'一共要上传{len(image_files)}张图片, 首张图片上传成功: {file}')
-            await page.wait_for_timeout(100)
             for index, file in enumerate(image_files[1:]):
-                await page.wait_for_timeout(random.random()*300)
+                await self.wait_short(page)
                 add_more1 = await self.get_locator(page, 'publish image add_more1')
                 add_more2 = await self.get_locator(page, 'publish image add_more2')
                 if await add_more1.is_visible():
@@ -131,7 +151,7 @@ class XhsUploader(BaseUploader):
             image_loading = await self.get_locator(page, 'publish image loading')
             image_loadings = await image_loading.all()
             for image in image_loadings:
-                await image.wait_for(timeout=wait_minute * OPEN_URL_TIMEOUT, state='hidden')
+                await image.wait_for(timeout=self.default_image_wait * DEFAULT_URL_TIMEOUT, state='hidden')
             return page
 
     async def write_title(self, page: Page, content: str) -> Optional[Page]:
@@ -164,9 +184,8 @@ class XhsUploader(BaseUploader):
                     # 等待标签列表出现
                     await page.keyboard.type(label)
                     label_list = await self.get_visible_locators(page, 'publish describe label_list')
-                    await page.wait_for_timeout(100)
-                    label_list = await label_list.all()
-                    await label_list[0].click()
+                    await self.wait_short(page)
+                    await label_list.first.click()
                     await page.keyboard.type(' ')
                     await page.keyboard.press('End')
             else:
@@ -208,17 +227,23 @@ class XhsUploader(BaseUploader):
 
     async def click_publish(self, page: Page) -> Optional[Page]:
         """  """
+        logger.info('点击自主声明')
+        statement = await self.get_visible_locator(page, 'publish statement')
+        await statement.click()
+        sure = await self.get_visible_locator(page, 'publish statement ai')
+        await sure.click()
+
         logger.info('点击发布')
         sure = await self.get_visible_locator(page, 'publish sure')
         await sure.click()
-        await page.wait_for_timeout(100)
+        await self.wait_short(page)
         # 图片不一定上传成功
         sure_loading = await self.get_locator(page, 'publish sure_loading')
-        wait_sec = OPEN_URL_TIMEOUT / 1000
+        wait_sec = DEFAULT_URL_TIMEOUT / 1000
         while await sure.is_visible():
             if await sure.is_enabled():
                 await sure.click()
-            await page.wait_for_timeout(300)
+            await self.wait_medium(page)
             if await sure_loading.is_visible():
                 logger.info('上传中...')
             wait_sec -= 1

@@ -7,18 +7,10 @@ from mediamate.utils.log_manager import log_manager
 logger = log_manager.get_logger(__file__)
 
 
-class ImageRecognizer(BaseMarket):
-    def __init__(self, ):
-       super().__init__()
-
-    def init(self, api_key, url: str = '', model: str = 'gpt-4o'):
-        url = url or 'https://api.302.ai/v1/chat/completions'
-        model = model or 'gpt-4o-mini'
-        super().init(api_key, url, model)
-        self.api_key = api_key
-        self.url = url
-        self.model = model
-        return self
+class OpenAIImageRecognizer(BaseMarket):
+    def __init__(self, api_key: str, model: str = ''):
+        model = model or 'gpt-4o'
+        super().__init__(api_key=api_key, url='https://api.302.ai/v1/chat/completions', model=model)
 
     def get_payload(self, image_url: str) -> str:
        """  """
@@ -56,8 +48,8 @@ class ImageRecognizer(BaseMarket):
     def get_response(self, image_url: str) -> str:
         """  """
         response = requests.request(
-           'POST',
-            self.url,
+            method='POST',
+            url=self.url,
             headers=self.get_headers(),
             data=self.get_payload(image_url)
         )
@@ -68,29 +60,26 @@ class ImageRecognizer(BaseMarket):
             return ''
 
 
-class MediaRecognizer(BaseMarket):
-    def __init__(self):
-        super().__init__()
+class OpenAIAudioRecognizer(BaseMarket):
+    def __init__(self, api_key: str, model: str = ''):
+        model = model or 'whisper-1'
+        super().__init__(api_key=api_key, url='https://api.302.ai/v1/audio/transcriptions', model=model)
 
-    def init(self, api_key, url: str='', model: str=''):
-        self.api_key = api_key
-        self.url = url or 'https://api.302.ai/v1/audio/transcriptions'
-        self.model = model or 'whisper-1'
-        return self
-
-    def get_payload(self, **kwargs) -> str:
+    def get_payload(self, language: str, **kwargs) -> dict:
         """  """
+        return {'model': self.model, 'response_format': 'json', 'language': language}
 
     def get_headers(self) -> dict:
         """  """
+        return {'Authorization': f'Bearer {self.api_key}', 'User-Agent': 'Apifox/1.0.0 (https://apifox.com)', 'Accept': 'application/json'}
 
     def get_response(self, filename: str, language: str='zh', **kwargs) -> {}:
         """  """
         response = requests.request(
-            'POST',
-            self.url,
-            headers={'Authorization': f'Bearer {self.api_key}', 'User-Agent': 'Apifox/1.0.0 (https://apifox.com)', 'Accept': 'application/json'},
-            data={'model': self.model, 'response_format': 'json', 'language': language},
+            method='POST',
+            url=self.url,
+            headers=self.get_headers(),
+            data=self.get_payload(language),
             files={"file": open(filename, "rb")}
         )
         if response.status_code == 200:

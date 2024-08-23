@@ -1,7 +1,16 @@
+import sys
+import os
+
+pythonpath = os.getenv("PYTHONPATH")
+if pythonpath:
+    sys.path.append(pythonpath)
+
 import asyncio
+from playwright.async_api import Playwright, async_playwright
+
 from mediamate.platforms.dy.client import DyClient
 from mediamate.platforms.xhs.client import XhsClient
-from mediamate.utils.schemas import MediaLoginInfo
+from mediamate.utils.schemas import MediaInfo, UrlType
 from mediamate.config import config
 from mediamate.utils.log_manager import log_manager
 
@@ -9,53 +18,34 @@ from mediamate.utils.log_manager import log_manager
 logger = log_manager.get_logger(__name__)
 
 
-async def run_xhs():
-    """
-    Initialize and run the XHS client for base and creator functionalities.
-
-    Creates an instance of the XHS client and starts base and creator functionalities
-    for each client based on the configuration.
-    """
-    xhs_client = XhsClient()
-    media_config = config.MEDIA.get('media')
-    if media_config:
-        xhs_config = media_config.get('xhs', [])
-        for i in xhs_config:
-            xhs_client.init(MediaLoginInfo(**i))
-            if i.get('base'):
-                await xhs_client.start_base()
-            if i.get('creator'):
-                await xhs_client.start_creator()
-
-
-async def run_dy():
-    """
-    Initialize and run the DY client for base and creator functionalities.
-
-    Creates an instance of the DY client and starts base and creator functionalities
-    for each client based on the configuration.
-    """
-    dy_client = DyClient()
-    media_config = config.MEDIA.get('media')
-    if media_config:
-        dy_config = media_config.get('dy', [])
-        for i in dy_config:
-            dy_client.init(MediaLoginInfo(**i))
-            if i.get('base'):
-                await dy_client.start_base()
-            if i.get('creator'):
-                await dy_client.start_creator()
-
-
 async def run_config():
-    """
-    Asynchronously run the configuration for both XHS and DY clients.
-
-    Executes XHS and DY client configurations concurrently and handles any exceptions
-    that may occur.
-    """
-    await run_xhs()
-    await run_dy()
+    """  """
+    async with async_playwright() as p:
+        media_config = config.MEDIA.get('media')
+        if media_config:
+            xhs_config: list = media_config.get('xhs', [])
+            dy_config: list = media_config.get('dy', [])
+            tasks = []
+            while True:
+                if not(dy_config and xhs_config):
+                    break
+                if xhs_config:
+                    xhs = xhs_config.pop()
+                    if xhs.get('home'):
+                        xhs_home_client = XhsClient(MediaInfo(url=UrlType.XHS_HOME_URL, **xhs))
+                        tasks.append(xhs_home_client.start_home(p))
+                    if xhs.get('creator'):
+                        xhs_creator_client = XhsClient(MediaInfo(url=UrlType.XHS_CREATOR_URL, **xhs))
+                        tasks.append(xhs_creator_client.start_creator(p))
+                if dy_config:
+                    dy = dy_config.pop()
+                    if dy.get('home'):
+                        home_client = DyClient(MediaInfo(url=UrlType.DY_HOME_URL, **dy))
+                        tasks.append(home_client.start_home(p))
+                    if dy.get('creator'):
+                        creator_client = DyClient(MediaInfo(url=UrlType.DY_CREATOR_URL, **dy))
+                        tasks.append(creator_client.start_creator(p))
+                await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':

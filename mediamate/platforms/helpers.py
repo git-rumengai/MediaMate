@@ -1,13 +1,13 @@
 import asyncio
 import json
-import cv2
+import re
 import httpx
-import numpy as np
-from typing import List, Dict, Optional
+from typing import List, Dict
+
 from datetime import datetime
 
 from mediamate.tools.api_market.base import BaseMarket
-from mediamate.utils.const import HTTP_BIN, DEFAULT_REPLY
+from mediamate.utils.const import HTTP_BIN
 from mediamate.utils.log_manager import log_manager
 
 
@@ -80,16 +80,13 @@ async def handle_dialog_accept(dialog):
     await dialog.accept()
 
 
-async def message_reply(prompt: str, messages: List[Dict[str, str]], chat_api: Optional[BaseMarket] = None) -> str:
+async def message_reply(chat_api: BaseMarket, prompt: str, messages: List[Dict[str, str]]) -> str:
     """监听后处理"""
-    if chat_api:
-        message_str = json.dumps(messages, indent=4)
-        prompt += f'\n###\n{message_str}###\n'
-        reply = chat_api.get_response(prompt)
-    else:
-        reply = prompt if prompt else DEFAULT_REPLY
-    # 抖音评论有换行符会直接确认
-    return reply.replace('\n', '   ')
+    message_str = json.dumps(messages, indent=4, ensure_ascii=False)
+    prompt += f'\n###\n{message_str}###\n'
+    logger.info(prompt)
+    reply = chat_api.get_response(prompt)
+    return reply
 
 
 async def download_image(session, url: str, file_path: str):
@@ -105,3 +102,24 @@ async def download_image(session, url: str, file_path: str):
             logger.info(f'文件下载完毕: {file_path}')
         else:
             logger.info(f"Failed to download image, status code: {response.status}")
+
+
+def extract_at_users(comment) -> list:
+    """ 正则表达式匹配@某人 """
+    pattern = r'@[\w]+'
+    at_users = re.findall(pattern, comment)
+    return at_users
+
+
+def remove_at_users(comment) -> str:
+    """ 删除 @某人 """
+    pattern = r'@[\w]+'
+    # 使用sub方法将匹配到的内容替换为空字符串
+    cleaned_comment = re.sub(pattern, '', comment)
+    return cleaned_comment
+
+
+def add_message_to_list(new_msg: Dict[str, str], lst: List[Dict[str, str]]) -> List:
+    if not any(set(new_msg.values()) & set(existing_dict.values()) for existing_dict in lst):
+        lst.append(new_msg)
+    return lst
