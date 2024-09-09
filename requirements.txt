@@ -12,3 +12,9 @@ Pillow
 markdown2
 duckduckgo_search
 aiohttp
+plotly
+moviepy
+streamlit
+python-pptx
+pdf2image
+python-pptx-interface

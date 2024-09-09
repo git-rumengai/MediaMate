@@ -1,11 +1,11 @@
 from typing import Optional
 from playwright.async_api import Page, async_playwright, Playwright
 
-from mediamate.utils.schemas import MediaInfo
+from mediamate.utils.schema import MediaInfo
 from mediamate.utils.log_manager import log_manager
-from mediamate.platforms.dy.uploader import DyUploader
-from mediamate.platforms.dy.downloader import DyDownloader
-from mediamate.platforms.dy.operator import DyOperator
+from mediamate.platforms.dy.upload import DyUploader
+from mediamate.platforms.dy.download import DyDownloader
+from mediamate.platforms.dy.operate import DyOperator
 from mediamate.platforms.dy.channel import DyChannel
 from mediamate.platforms.base import BaseClient
 

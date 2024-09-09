@@ -8,7 +8,7 @@ from playwright.async_api import Page, Locator, BrowserContext
 
 from mediamate.config import ConfigManager
 from mediamate.tools.proxy import acheck_proxy
-from mediamate.utils.schemas import MediaInfo, MediaPath
+from mediamate.utils.schema import MediaInfo, MediaPath
 from mediamate.utils.log_manager import log_manager
 from mediamate.utils.const import (
     DEFAULT_LOCATION,
@@ -26,11 +26,16 @@ from mediamate.utils.const import (
     DEFAULT_REPLY_COMMENT_TIMES,
     DEFAULT_REPLY_CHAT_LENGTH
 )
-from mediamate.utils.functions import get_useragent, get_direct_proxy, proxy_to_playwright
-
-from mediamate.platforms.helpers import get_httpbin, handle_dialog_accept, download_image
+from mediamate.utils.common import (
+    get_useragent,
+    get_direct_proxy,
+    proxy_to_playwright,
+    get_httpbin,
+    handle_dialog_accept,
+    download_image
+)
 from mediamate.utils.enums import MediaType, UrlType
-from mediamate.tools.converter.convert_to_hash import ConvertToHash
+from mediamate.tools.convert.convert_to_hash import ConvertToHash
 from mediamate.platforms.verify import RotateVerify, MoveVerify, BaseVerify
 
 
@@ -200,7 +205,7 @@ class BaseClient(BaseMedia):
         context_options_headed = {
             'channel': 'chrome',
             'headless': False,
-            "viewport": {"width": 1920, "height": 1080},
+            "viewport": {"width": 1280, "height": 720},
             "slow_mo": 1000,
             'permissions': ["geolocation"],
             'geolocation': {"longitude": DEFAULT_LOCATION[0], "latitude": DEFAULT_LOCATION[1]},
@@ -467,6 +472,9 @@ class BaseUploader(BaseLocator):
             if os.path.isdir(full_path):
                 logger.info(f'发表文件路径: {full_path}')
                 media_type, files = self.check_upload_type(full_path)
+                if not files:
+                    logger.info(f'跳过: {full_path}')
+                    continue
                 saved_files = self.active_config.get('published', [])
                 hash_files = self.convert_to_hash.process_input(files)
                 if any(hash_file in saved_files for hash_file in hash_files):

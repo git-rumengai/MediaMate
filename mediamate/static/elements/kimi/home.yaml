@@ -1,0 +1,56 @@
+ppt:
+  login:
+    name: '登录'
+    xpath: '//div[text()="登录"]'
+  editor:
+    name: '编辑框'
+    xpath: '//div[contains(@class,"editorContentEditable")]'
+  scroller_list:
+    name: 'lie'
+    xpath: '//div[@data-testid="virtuoso-scroller"]//div[@data-index]'
+
+  toolbar:
+    name: '工具框'
+    xpath: '//div[contains(@class,"toolbarContainer")]'
+    _attach:
+      name: '上传附件'
+      xpath: '/div[2]/div[1]//span[@role="img"]'
+  button_disabled:
+    name: '不可点击的按钮'
+    xpath: '//button[@id="send-button" and @disabled]'
+  button_click:
+    name: '可点击的按钮'
+    xpath: '//button[@id="send-button" and not(@disabled)]'
+
+  stop_output:
+    name: '停止输出'
+    xpath: '//*[text()="停止输出"]'
+  create_ppt:
+    name: '生成ppt'
+    xpath: '//*[text()="一键生成PPT"]'
+  edit_ppt:
+    name: '编辑ppt'
+    xpath: '//*[text()="编辑PPT"]'
+
+  new_ppt:
+    name: '生成ppt'
+    xpath: '//*[text()="生成PPT"]'
+  finish_text:
+    name: '制作完成'
+    xpath: '//*[text()="PPT制作已完成!"]'
+
+  to_editor:
+    name: '编辑'
+    xpath: '//*[text()="去编辑"]'
+  download:
+    name: '下载'
+    xpath: '//div[@class="button download-btn"]//*[text()="下载"]'
+    download_button:
+      name: '下载按钮'
+      xpath: '//div[@class="download-button"]'
+    download_finish:
+      name: '下载完成'
+      xpath: '//*[text()="下载完成"]'
+  back_button:
+    name: '返回按钮'
+    xpath: '//div[contains(@class,"back-button")]'

@@ -4,7 +4,7 @@ import shutil
 from typing import List
 from mediamate.tools.api_market.generator import OpenAIImageGenerator
 from mediamate.config import config, ConfigManager
-from mediamate.utils.schemas import MediaInfo, MediaPath
+from mediamate.utils.schema import MediaInfo, MediaPath
 from mediamate.utils.enums import UrlType
 from mediamate.utils.log_manager import log_manager
 
@@ -15,8 +15,7 @@ logger = log_manager.get_logger(__file__)
 class LogoGPT:
     """ 根据传入的LOGO提示词设计LOGO, 可同时输入多个提示词 """
     def __init__(self):
-        api_key = config.get('302__APIKEY')
-        self.image_generator = OpenAIImageGenerator(api_key=api_key)
+        self.image_generator = OpenAIImageGenerator()
         self.image = []
 
     def get_image(self, prompt: str) -> List[dict]:

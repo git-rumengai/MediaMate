@@ -3,12 +3,12 @@ from typing import Optional
 from playwright.async_api import Page, async_playwright, Playwright
 
 from mediamate.utils.log_manager import log_manager
-from mediamate.platforms.xhs.uploader import XhsUploader
-from mediamate.platforms.xhs.downloader import XhsDownloader
+from mediamate.platforms.xhs.upload import XhsUploader
+from mediamate.platforms.xhs.download import XhsDownloader
 from mediamate.platforms.xhs.channel import XhsChannel
-from mediamate.platforms.xhs.operator import XhsOperator
+from mediamate.platforms.xhs.operate import XhsOperator
 from mediamate.platforms.base import BaseClient
-from mediamate.utils.schemas import MediaInfo
+from mediamate.utils.schema import MediaInfo
 
 
 logger = log_manager.get_logger(__file__)

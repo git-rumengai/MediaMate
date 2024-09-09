@@ -1,10 +1,12 @@
 import requests
 import json
 from mediamate.tools.api_market.base import BaseMarket
+from mediamate.config import config
 
 
 class TextEmbeddingsOpenAI(BaseMarket):
-    def __init__(self, api_key: str, model: str = ''):
+    def __init__(self, api_key: str = '', model: str = ''):
+        api_key = api_key or config.get('302__APIKEY', '')
         model = model or 'text-embedding-3-large'
         super().__init__(api_key=api_key, url='https://api.302.ai/v1/embeddings', model=model)
 

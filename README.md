@@ -8,6 +8,10 @@ MediaMate 是一个实验性的开源项目，利用playwright自动控制网页
 
 **高级功能：** 不需要下载本地大模型，直接使用302AI提供的文本，图片，音乐，视频和搜索等各种大模型API。
 
+### 可视化界面
+1. 复杂的配置文件通过可视化界面快速配置，无需代码
+2. 项目提供的模板也可以通过可视化界面执行
+
 ### 支持抖音和小红书两大平台
 **基础功能：** 
 - 自动保存本地登录信息
@@ -48,10 +52,8 @@ MediaMate 是一个实验性的开源项目，利用playwright自动控制网页
 
 1. 下载项目到本地后解压 "autoenv.rar"
 2. 双击"install_env.bat"自动安装python环境和playwright
-3. 双击"run_main.bat"自动运行"MediaMate/mediamate/main.py"文件
-> 注意事项: 运行"run_main.bat"前确保配置好"MediaMate/.env"和"MediaMate/.media.yaml"。
-> 自启动程序的所有行为完全依赖配置文件, 
-> 在完整配置下会同时运行【抖音主页，抖音创作者中心，小红书主页，小红书创作者中心】4个界面。
+3. 双击"run_ui.bat"自动运行"MediaMate/mediamate/start_ui.py"文件
+> 注意事项: 首次启动后先执行"项目配置", 确保配置完成".env"和"xhs"/"dy"
 
 ## 代码安装
 
@@ -85,8 +87,9 @@ pip install --upgrade -e .
 4. 运行demo时注释掉报错大模型相关代码(可选)
 
 > 注意事项
-> 1. 在任何地方导入metagpt之前都必须先导入项目配置，以确保metagpt输出的内容可以保存到项目指定目录
+> 1. 为了确保metagpt输出的内容可以保存到本项目指定目录, 请在MetaGPT项目最顶层的"\__init\__.py"文件中添加如下代码
 > ```python
+> # metagpt/__init__.py
 > from mediamate.config import config
 > ```
 
@@ -97,6 +100,7 @@ FFmpeg 是一个强大的多媒体处理工具包，能够用来处理音频和�
 1. 访问[官网](https://www.ffmpeg.org/download.html)下载对应版本软件放到任意文件夹下
 2. 将上述"任意文件夹"路径添加到环境变量中即可
 3. 再cmd命令行输入"ffmpeg -version"可验证安装成功
+
 
 # 配置
 ## 全局配置

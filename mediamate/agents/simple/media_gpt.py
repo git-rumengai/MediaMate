@@ -1,12 +1,14 @@
 import os.path
-from typing import List
+from typing import List, Type
+from pydantic import BaseModel
 
-from mediamate.utils.schemas import MediaInfo, MediaPath
+from mediamate.utils.schema import MediaInfo, MediaPath
 from mediamate.utils.enums import UrlType
 from mediamate.tools.api_market.chat import Chat
-from mediamate.tools.converter.convert_to_text import ConvertToText
+from mediamate.tools.convert.convert_to_text import ConvertToText
 from mediamate.tools.api_market.recognizer import OpenAIImageRecognizer, OpenAIAudioRecognizer
 from mediamate.config import config, ConfigManager
+from mediamate.utils.llm_pydantic import llm_pydantic
 from mediamate.utils.log_manager import log_manager
 
 
@@ -16,30 +18,26 @@ logger = log_manager.get_logger(__file__)
 class MediaGPT:
     """ 输入本地图片/视频文件, 输出完整的图文准备文件 """
     def __init__(self):
-        api_key = config.get('302__APIKEY')
-        model = config.get('302__LLM')
-        image_recognizer = OpenAIImageRecognizer(api_key=api_key)
-        audio_recognizer = OpenAIAudioRecognizer(api_key=api_key)
+        image_recognizer = OpenAIImageRecognizer()
+        audio_recognizer = OpenAIAudioRecognizer()
         self.convert_to_text = ConvertToText(image_recognizer, audio_recognizer)
-        self.chat = Chat(api_key=api_key, model=model)
+        self.chat = Chat()
 
-    def prepare_image(self, prompt: str, images: List[str]) -> str:
+    def prepare_image(self, prompt: str, images: List[str], response_type: Type[BaseModel]) -> BaseModel:
         """  """
         for index, image in enumerate(images):
             logger.info(f'正在识别第{index+1}张图片: ')
             response = self.convert_to_text.read_file(image)
             logger.info(f'识别内容: {response}')
             prompt += f'\n图{index + 1}: {response}\n'
-        logger.info(prompt)
-        response = self.chat.get_response(prompt)
+        response = llm_pydantic.get_llm_response(self.chat, prompt, response_type)
         return response
 
-    def prepare_video(self, prompt: str, video: str) -> str:
+    def prepare_video(self, prompt: str, video: str, response_type: Type[BaseModel]) -> BaseModel:
         """  """
         response = self.convert_to_text.read_file(video)
         prompt = f'{prompt}\n###\n{response}\n###'
-        logger.info(prompt)
-        response = self.chat.get_response(prompt)
+        response = llm_pydantic.get_llm_response(self.chat, prompt, response_type)
         return response
 
     async def save_to_xhs(self, metadata: dict):

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日速递</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baskervville+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
+    <style>
+        .zhi-mang-xing-regular {
+            font-family: "Zhi Mang Xing", cursive;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .noto-sans-sc-400 {
+            font-family: "Noto Sans SC", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .noto-sans-sc-800 {
+            font-family: "Noto Sans SC", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 800;
+            font-style: normal;
+        }
+
+        .baskervville-sc-regular {
+            font-family: "Baskervville SC", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .playfair-display_400 {
+          font-family: "Playfair Display", serif;
+          font-optical-sizing: auto;
+          font-weight: 400;
+          font-style: italic;
+        }
+
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(to bottom,  #ffffff, #d0d0d0);
+            padding-bottom: 20px;
+        }
+
+        .main {
+            background-color: #efeef2;
+        }
+
+        .footer {
+            padding: 30px 0 50px 0;
+            text-align: center;
+            background: linear-gradient(to bottom,  #ffffff, #d0d0d0);
+
+        }
+
+        .qr-code {
+            width: 100px; /* Fixed width */
+            height: 100px; /* Fixed height */
+            overflow: hidden; /* Hides overflowed parts of the image */
+            display: flex;
+            align-items: center; /* Centers image vertically */
+            justify-content: center; /* Centers image horizontally */
+            border: 0 solid #ccc; /* Optional, for visual clarity */
+        }
+
+        .qr-code img {
+            width: 100%; /* Makes the image fill the width of the container */
+            height: 100%; /* Makes the image fill the height of the container */
+            object-fit: contain; /* Ensures the image maintains its aspect ratio */
+        }
+
+        .container-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            margin: 40px auto 0 auto;
+        }
+
+        .header-title {
+            font-weight: bold;
+            font-size: 64px;
+            text-align: left;
+            color: #006f95;
+        }
+
+        .header-subtitle {
+            font-family: 'SimSun', sans-serif;
+            font-weight: bold;
+            text-align: left;
+            color: #006f95;
+        }
+
+        .header-subtitle .highlight {
+            color: #b33030;
+        }
+
+        .table-title {
+            width: 90%;
+            margin: 0 auto;
+        }
+        .breaking-news-table td {
+            text-align: center;
+            font-weight: bold;
+            border-top: 0 solid #000;
+            border-bottom: 0 solid #000;
+        }
+        .breaking-news-left {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            width: 66%;
+            font-size: 24px;
+            color: #000;
+        }
+        .breaking-news-right {
+            text-align: center;
+            background-color: #006f95;
+            color: #fff;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            font-size: 24px;
+        }
+         .date {
+             text-align: left;
+             font-weight: bold;
+             color: black;
+             width: 90%;
+             margin: 0 auto;
+             padding-top: 5px;
+             padding-bottom: 5px;
+         }
+
+        .section-title {
+            background-color: #006f95;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            padding: 1px 40px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+
+        .news-card {
+            width: 85%;
+            margin: 0 auto;
+            text-align: left;
+            border-radius: 5px;
+            padding: 1px;
+        }
+        .news-header {
+            background: linear-gradient(to right, #bf4245, #3f90ad);
+            color: white;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+        }
+        p {
+            text-align: left;
+            margin-left: 20px;
+            margin-right: 20px;
+            font-size: 15px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="container-title">
+              <div class="text-center mb-0">
+                <h1 class="header-title zhi-mang-xing-regular">{{ title1 }}</h1>
+                <h3 class="header-subtitle">
+                    <span class="highlight">{{ title2 }}</span>{{ title3 }}
+                </h3>
+                </div>
+              <div class="qr-code">
+                <img src="{{ qr_code }}" alt="二维码">
+              </div>
+            </div>
+
+            <table class="table-title baskervville-sc-regular">
+                <tr>
+                    <td class="breaking-news-left">{{ title4 }}</td>
+                    <td class="breaking-news-right">{{ title5 }}</td>
+                </tr>
+            </table>
+
+
+            <div class="date playfair-display_400">
+                {{ date }}
+            </div>
+
+        </div>
+
+        <div class="main">
+            {% macro render_news_section(news_title, news_list) %}
+                <div class="text-center mb-2">
+                    <div class="section-title noto-sans-sc-800">{{ news_title }}</div>
+                </div>
+
+                {% for news in news_list %}
+                <div class="news-card noto-sans-sc-400">
+                    <div class="news-header">{{ loop.index }} | {{ news.title }}</div>
+                    <p>{{ news.content }}</p>
+                </div>
+                {% endfor %}
+            {% endmacro %}
+
+            <!-- 遍历 all_news 字典并渲染每个新闻部分 -->
+            {% for news_title, news_list in all_news.items() %}
+                {{ render_news_section(news_title, news_list) }}
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            <img src="{{ data_imag }}" alt="数据" style="max-width: 90%; margin: 2px;">
+        </div>
+
+    </div>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.min.js"></script>
+</body>
+
+</html>

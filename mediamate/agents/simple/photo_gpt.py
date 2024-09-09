@@ -5,7 +5,7 @@ import shutil
 from mediamate.tools.api_market.chat import Chat
 from mediamate.tools.api_market.generator import OpenAIImageGenerator
 from mediamate.config import config, ConfigManager
-from mediamate.utils.schemas import MediaInfo, MediaPath
+from mediamate.utils.schema import MediaInfo, MediaPath
 from mediamate.utils.enums import UrlType
 from mediamate.utils.log_manager import log_manager
 
@@ -16,10 +16,8 @@ logger = log_manager.get_logger(__file__)
 class PhotoGPT:
     """ 让llm设计提示词, 然后生成图片. 同一段提示词可生成多张图片 """
     def __init__(self):
-        api_key = config.get('302__APIKEY')
-        model = config.get('302__LLM')
-        self.chat = Chat(api_key=api_key, model=model)
-        self.image_generator = OpenAIImageGenerator(api_key=api_key)
+        self.chat = Chat()
+        self.image_generator = OpenAIImageGenerator()
         self.image = []
 
     def get_text(self, prompt: str) -> str:

@@ -9,8 +9,8 @@ from playwright.async_api import Page
 from mediamate.platforms.base import BaseLocator
 from mediamate.utils.const import DEFAULT_URL_TIMEOUT
 from mediamate.utils.log_manager import log_manager
-from mediamate.platforms.helpers import remove_at_users, add_message_to_list, message_reply
-from mediamate.utils.schemas import MediaInfo
+from mediamate.utils.common import remove_at_users, add_message_to_list, message_reply
+from mediamate.utils.schema import MediaInfo
 from mediamate.tools.api_market.chat import Chat
 from mediamate.config import config, ConfigManager
 

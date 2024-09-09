@@ -121,7 +121,7 @@ class Config:
             config2['llm']['model'] = self.get('302__LLM') or 'gpt-4o-mini'
 
         # 设置mategpt配置文件路径
-        agent_dir = f'{self.DATA_DIR}/agent'
+        agent_dir = f'{self.DATA_DIR}/agent/metagpt'
         os.environ['METAGPT_PROJECT_ROOT'] = agent_dir
         os.makedirs(f'{agent_dir}/config', exist_ok=True)
         with open(f'{agent_dir}/config/config2.yaml', 'w', encoding='utf-8') as file:

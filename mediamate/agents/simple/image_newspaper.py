@@ -4,10 +4,10 @@ from datetime import datetime, timedelta
 from typing import Tuple, List
 
 from mediamate.tools.duckduckgo import AsyncDDGS
-from mediamate.tools.converter.convert_to_image import ConvertToImage
+from mediamate.tools.convert.convert_to_image import ConvertToImage
 from mediamate.config import config, ConfigManager
 from mediamate.utils.log_manager import log_manager
-from mediamate.utils.schemas import MediaInfo, MediaPath
+from mediamate.utils.schema import MediaInfo, MediaPath
 from mediamate.utils.enums import UrlType
 
 

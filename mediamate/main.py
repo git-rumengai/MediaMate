@@ -6,11 +6,11 @@ if pythonpath:
     sys.path.append(pythonpath)
 
 import asyncio
-from playwright.async_api import Playwright, async_playwright
+from playwright.async_api import async_playwright
 
 from mediamate.platforms.dy.client import DyClient
 from mediamate.platforms.xhs.client import XhsClient
-from mediamate.utils.schemas import MediaInfo, UrlType
+from mediamate.utils.schema import MediaInfo, UrlType
 from mediamate.config import config
 from mediamate.utils.log_manager import log_manager
 
@@ -26,8 +26,9 @@ async def run_config():
             xhs_config: list = media_config.get('xhs', [])
             dy_config: list = media_config.get('dy', [])
             tasks = []
+            print(xhs_config)
             while True:
-                if not(dy_config and xhs_config):
+                if not(dy_config or xhs_config):
                     break
                 if xhs_config:
                     xhs = xhs_config.pop()
@@ -35,6 +36,7 @@ async def run_config():
                         xhs_home_client = XhsClient(MediaInfo(url=UrlType.XHS_HOME_URL, **xhs))
                         tasks.append(xhs_home_client.start_home(p))
                     if xhs.get('creator'):
+                        print(xhs)
                         xhs_creator_client = XhsClient(MediaInfo(url=UrlType.XHS_CREATOR_URL, **xhs))
                         tasks.append(xhs_creator_client.start_creator(p))
                 if dy_config:

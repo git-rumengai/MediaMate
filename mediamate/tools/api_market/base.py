@@ -1,9 +1,15 @@
 from typing import Any
 from abc import ABC, abstractmethod
+from mediamate.config import config
 
 
 class BaseMarket(ABC):
-    def __init__(self, api_key: str, url: str = '', model: str = ''):
+    def __init__(self, api_key: str = '', url: str = '', model: str = ''):
+        api_key = api_key or config.get('302__APIKEY', '')
+        model = model or config.get('302__LLM', '')
+        assert api_key, '缺少配置: 302__APIKEY'
+        assert model, '缺少配置: 302__LLM'
+
         self.api_key = api_key
         self.url = url
         self.model = model

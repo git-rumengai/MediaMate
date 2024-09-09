@@ -6,10 +6,10 @@ from playwright.async_api import Page
 from functools import partial
 
 from mediamate.config import config
-from mediamate.platforms.base import BaseLocator
-from mediamate.platforms.helpers import remove_at_users, add_message_to_list, message_reply
-from mediamate.utils.schemas import MediaInfo
 from mediamate.tools.api_market.chat import Chat
+from mediamate.platforms.base import BaseLocator
+from mediamate.utils.common import remove_at_users, add_message_to_list, message_reply
+from mediamate.utils.schema import MediaInfo
 from mediamate.utils.log_manager import log_manager
 
 
@@ -213,6 +213,7 @@ class XhsHomepage(BaseLocator):
                     if like_num > 1 or reply_num > 1:
                         message_list = add_message_to_list(note, message_list)
                     temp_record_list = add_message_to_list(record, temp_record_list)
+
                 comment_list_count += len(comment_list_all)
                 if len(temp_record_list) > self.default_data_length or await the_end.is_visible():
                     break
