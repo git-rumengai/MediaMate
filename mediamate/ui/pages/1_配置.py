@@ -8,6 +8,10 @@ from mediamate.config import config
 from dotenv import dotenv_values
 from mediamate.utils.log_manager import log_manager
 
+"""
+点赞, 评论, 收藏
+
+"""
 
 logger = log_manager.get_logger(__file__)
 
@@ -111,6 +115,7 @@ def display_media(media_name: str):
     media_configs = st.session_state.media_config['media'][media_name]
     new_media_configs = []
     st.markdown(f'**共有 {len(media_configs)} 个 {media_name} 账户配置**')
+    multi_actions = ['点赞', '收藏', '评论']
     for index, media_config in enumerate(media_configs):
         st.markdown(f'### 第 {index + 1} 个 {media_name} 账户配置')
         unique_key = 'account'
@@ -126,7 +131,6 @@ def display_media(media_name: str):
             unique_key = 'upload'
             upload = media_config['creator'].get(unique_key, False)
             media_config['creator'][unique_key] = st.radio(f'是否自动上传 {media_name} 视频/图文', [False, True], index=upload, key=f'{media_name}_creator_{unique_key}_{index}')
-
             unique_key = 'download'
             download = media_config['creator'].get(unique_key, [])
             if download:
@@ -134,7 +138,6 @@ def display_media(media_name: str):
                 input_download = st.text_input('下载灵感笔记数据, 多个主题用逗号分割', value=download_text, key=f'{media_name}_explore_{unique_key}_{index}')
                 input_download = input_download.replace('，', ',')
                 media_config['creator'][unique_key] = [i.strip() for i in input_download.split(',')]
-
             st.markdown(f'**{media_name} 的主页操作配置**')
             unique_key = 'comment'
             comment = media_config['home']['operate'].get(unique_key, False)
@@ -146,7 +149,6 @@ def display_media(media_name: str):
                 input_ids = st.text_input('下载某人小红书账号, 输入小红书号, 多个账号用逗号分割', value=ids_text, key=f'{media_name}_download_{unique_key}_{index}')
                 input_ids = input_ids.replace('，', ',')
                 media_config['home']['download'][unique_key] = [i.strip() for i in input_ids.split(',')]
-
             st.markdown(f'**{media_name} 的浏览配置**')
             unique_key = 'topics'
             topics = media_config['home']['explore'].get(unique_key)
@@ -158,7 +160,7 @@ def display_media(media_name: str):
             unique_key = 'actions'
             actions = media_config['home']['explore'].get(unique_key, [])
             if actions:
-                media_config['home']['explore'][unique_key] = st.multiselect('浏览内容执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=actions, default=actions[:1], key=f'{media_name}_explore_{unique_key}_{index}')
+                media_config['home']['explore'][unique_key] = st.multiselect('浏览内容执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=multi_actions, default=actions[:1], key=f'{media_name}_explore_{unique_key}_{index}')
             unique_key = 'mention'
             mention = media_config['home']['explore'].get(unique_key)
             if mention:
@@ -186,7 +188,7 @@ def display_media(media_name: str):
             unique_key = 'actions'
             actions = media_config['home']['comment'].get(unique_key, [])
             if actions:
-                media_config['home']['comment'][unique_key] = st.multiselect('浏览内容执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=actions, default=actions[:1], key=f'{media_name}_comment_{unique_key}_{index}')
+                media_config['home']['comment'][unique_key] = st.multiselect('浏览内容执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=multi_actions, default=actions[:1], key=f'{media_name}_comment_{unique_key}_{index}')
             unique_key = 'mention'
             mention = media_config['home']['comment'].get(unique_key)
             if mention:
@@ -248,7 +250,7 @@ def display_media(media_name: str):
             unique_key = 'actions'
             actions = media_config['home']['discover'].get(unique_key, [])
             if actions:
-                media_config['home']['discover'][unique_key] = st.multiselect('浏览时执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=actions, default=actions[:1], key=f'{media_name}_discover_{unique_key}_{index}')
+                media_config['home']['discover'][unique_key] = st.multiselect('浏览时执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=multi_actions, default=actions[:1], key=f'{media_name}_discover_{unique_key}_{index}')
             unique_key = 'mention'
             mention = media_config['home']['discover'].get(unique_key)
             if mention:
@@ -275,7 +277,7 @@ def display_media(media_name: str):
             unique_key = 'actions'
             actions = media_config['home']['comment'].get(unique_key, [])
             if actions:
-                media_config['home']['comment'][unique_key] = st.multiselect('浏览时执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=actions, default=actions[:1], key=f'{media_name}_comment_{unique_key}_{index}')
+                media_config['home']['comment'][unique_key] = st.multiselect('浏览时执行的动作, 评论内容由"default_comment_message"或"ai_prompt_content_comment"决定', options=multi_actions, default=actions[:1], key=f'{media_name}_comment_{unique_key}_{index}')
             unique_key = 'mention'
             mention = media_config['home']['comment'].get(unique_key)
             if mention:

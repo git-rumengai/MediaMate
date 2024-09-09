@@ -19,21 +19,22 @@ script_params = json.loads(script_params)
 
 async def get_kimi_ppt(delete_ppt: bool = True):
     """  """
-    ppt_path = f'{config.DATA_DIR}/upload/0.pptx'
+    ppt_dir = f'{config.DATA_DIR}/upload/kimi_ppt'
+    os.makedirs(ppt_dir, exist_ok=True)
+    ppt_path = f'{ppt_dir}/0.pptx'
     kimi_ppt_params = {
         'topic': '小红书涨粉操作手册',
         'logo_path': f'{os.path.dirname(config.PROJECT_DIR)}/docs/imgs/logo-透明底.png',
         'username': 'RuMengAI',
-
     }
     # 发布图文时的参数配置: 发布标题, 描述, 标签, 地点
     metadata = script_params.get('metadata') or {
-        '标题': '小红书涨粉操作手册',
-        '描述': '通过AI自动生成新闻并上传',
+        '标题': 'XX书涨粉操作手册',
+        '描述': '通过AI自动生成操作手册并上传',
         '标签': ('涨粉', '教程', 'RuMengAI'),
         '地点': '上海',
         '音乐': '热歌榜',
-        '贴纸': '涨粉',
+        '贴纸': '手册',
         '允许保存': '否',
     }
     kppt = KimiPPT(ppt_path)

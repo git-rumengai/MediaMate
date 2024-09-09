@@ -1,7 +1,5 @@
 import os
 import shutil
-from typing import Tuple
-from datetime import datetime
 
 from playwright.async_api import async_playwright
 from mediamate.tools.kimi.client import KimiClient
@@ -23,10 +21,10 @@ class KimiPPT:
 
     async def get_ppt(self, topic: str, logo_path: str, username: str):
         """  """
-        async with async_playwright() as p:
-            context, page = await self.kimi_client.login(p)
-            await self.kimi_client.get_ppt(page, self.ppt_path, topic)
-            await context.close()
+        # async with async_playwright() as p:
+        #     context, page = await self.kimi_client.login(p)
+        #     await self.kimi_client.get_ppt(page, self.ppt_path, topic)
+        #     await context.close()
         self.ppt_path = self.kimi_client.update_ppt(ppt_path=self.ppt_path, logo_path=logo_path, username=username)
         return self.ppt_path
 

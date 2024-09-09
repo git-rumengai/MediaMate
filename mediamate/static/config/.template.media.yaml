@@ -11,7 +11,6 @@ media:
         default_comment_reply_message: '谢谢评论！'      # 回复别人对自己的作品评论的默认消息
 
         default_data_length: 5                        # 默认获取数据长度: 10条
-        default_reply_chat_length: 5                  # 默认回复私聊数量: 10条
         default_reply_comment_length: 5               # 默认回复评论数量: 10条
         default_reply_comment_days: 3                  # 默认回复最近7天的图文
         default_reply_comment_times: 3                 # 默认回复最近5篇图文

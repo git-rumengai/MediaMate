@@ -2,7 +2,7 @@ import asyncio
 import os
 from typing import Tuple
 from mediamate.platforms.parser import XpathParser
-from playwright.async_api import Page, async_playwright, BrowserContext, Locator, FrameLocator
+from playwright.async_api import Page, BrowserContext, Locator, FrameLocator
 
 from mediamate.config import config
 from mediamate.utils.log_manager import log_manager
@@ -15,7 +15,7 @@ from mediamate.utils.common import (
     handle_dialog_accept,
 )
 from pptx import Presentation
-from pptx.util import Inches
+from pptx.util import Cm
 from datetime import datetime
 
 
@@ -190,7 +190,7 @@ class KimiClient:
                       topic: str,
                       scene: str = '商业计划',
                       style: str = '扁平简约',
-                      color_index: int = -2,
+                      color_index: int = -3,
                       card_index: int = 0
                       ) -> Page:
         """  """
@@ -259,41 +259,47 @@ class KimiClient:
     def update_ppt(self, ppt_path: str, username: str, logo_path: str, specified_font: str = 'SimSun') -> str:
         """ 替换ppt中的用户名, 日期和logo """
         presentation = Presentation(ppt_path)
+        slide_width = presentation.slide_width
+        slide_height = presentation.slide_height
+        horizontal_margin = slide_width / 8
+        vertical_margin = slide_height / 6
+
         current_year = datetime.now().year
         current_date = datetime.now().strftime("%Y.%m")
         for slide_num, slide in enumerate(presentation.slides):
             for shape in slide.shapes:
                 if shape.has_text_frame:
                     for paragraph in shape.text_frame.paragraphs:
-                        for run in paragraph.runs:
-                            if '202X' in run.text and len(run.text.strip()) == 4:
-                                run.text = str(current_year)
-                            elif '20XX' in run.text and len(run.text.strip()) == 4:
-                                run.text = str(current_year)
-                            elif '2X' in run.text and len(run.text.strip()) == 2:
-                                run.text = str(current_year)[-2:]
-                            if slide_num == 0 or slide_num == len(presentation.slides) - 1:
-                                if '主讲人' in run.text:
-                                    run.text = username
-                                elif '汇报人' in run.text:
-                                    run.text = username
-                                if "日期" in run.text:
-                                    run.text = current_date
-                                elif '时间' in run.text:
-                                    run.text = current_date
-                                if 'DESIGN' in run.text:
-                                    slide.shapes._spTree.remove(shape._element)
+                        paragraph_text = ''.join([run.text for run in paragraph.runs])
+                        if '202X' in paragraph_text and len(paragraph_text.strip()) == 4:
+                            paragraph_text = str(current_year)
+                        elif '20XX' in paragraph_text and len(paragraph_text.strip()) == 4:
+                            paragraph_text = str(current_year)
+                        elif '2X' in paragraph_text and len(paragraph_text.strip()) == 2:
+                            paragraph_text = str(current_year)[-2:]
+                        if slide_num == 0 or slide_num == len(presentation.slides) - 1:
+                            if '主讲人' in paragraph_text:
+                                paragraph_text = username
+                            elif '汇报人' in paragraph_text:
+                                paragraph_text = username
+                            if "日期" in paragraph_text:
+                                paragraph_text = current_date
+                            elif '时间' in paragraph_text:
+                                paragraph_text = current_date
+                            if 'DESIGN' in paragraph_text:
+                                slide.shapes._spTree.remove(shape._element)
+                        for index, run in enumerate(paragraph.runs):
+                            if index == 0:
+                                run.text = paragraph_text
+                            else:
+                                run.text = ''
                             run.font.name = specified_font
 
-                if shape.shape_type == 5:
+                if shape.shape_type == 5 and shape.width / Cm(1) < 5.0 and shape.height / Cm(1) < 0.6:
                     left = shape.left
                     top = shape.top
                     width = shape.width
                     height = shape.height
-                    slide_width = presentation.slide_width
-                    slide_height = presentation.slide_height
-                    horizontal_margin = slide_width / 8
-                    vertical_margin = slide_height / 6
                     if left <= horizontal_margin and top <= vertical_margin:
                         sp = shape._element
                         sp.getparent().remove(sp)
