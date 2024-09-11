@@ -24,7 +24,7 @@ COPYWRITING_PROMPT = """###
 ### 参考信息
 {content}
 
-### 按照如下schema描述输出标准的紧凑JSON格式：
+### 按照如下schema描述输出标准的JSON格式. 请确保JSON数据没有多余的空格和换行, 只包含最小的必要格式：
 {ResponseModel}
 """
 

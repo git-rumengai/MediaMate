@@ -28,23 +28,28 @@ class WebNews:
                             days: int = 7,
                             truncat: bool = False,
                             sentence: int = -1,
-                            region = 'cn-zh',
+                            force_image: bool = False,
+                            region='cn-zh',
                             ) -> list[dict[str, str]]:
         """
         获取新闻
-            - keywords: 搜索关键词列表。
-            - blacklist: 黑名单网站列表。
-            - limit: 返回新闻的数量限制。
-            - days: 新闻文章的时间范围（天数）。
-            - truncat: 是否截断新闻内容到完整句子。
-            - sentence: 限制新闻内容到指定句子数。
-            - region: 搜索的地区代码。
+            - keywords: 搜索关键词列表
+            - blacklist: 黑名单网站列表
+            - limit: 返回新闻的数量限制
+            - days: 新闻文章的时间范围（天数）
+            - truncat: 是否截断新闻内容到完整句子
+            - sentence: 限制新闻内容到指定句子数
+            - force_image: 只要有图片的新闻
+            - force_body: 只要有内容的新闻
+            - region: 搜索的地区代码
         """
         max_results = math.ceil(limit / len(keywords)) * 2
         async with AsyncDDGS() as ddgs:
             tasks = (self.filter_news(ddgs, keyword, max_results, blacklist, days, region) for keyword in keywords)
             news = await asyncio.gather(*tasks)
             filtered_news = [item for sublist in news for item in sublist]
+            if force_image:
+                filtered_news = [item for item in filtered_news if item['image'].strip() != '']
             filtered_news: List[dict] = list({item['url']: item for item in filtered_news}.values())
             cn_end_punctuation = '。！？'
             en_end_punctuation = '.!?'

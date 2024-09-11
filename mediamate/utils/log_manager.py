@@ -9,9 +9,11 @@ from mediamate.config import config
 
 class Utf8StreamHandler(logging.StreamHandler):
     def __init__(self, stream=None):
-        # Default to sys.stdout if no stream is provided
-        stream = stream or sys.stdout
-        super().__init__(stream=io.TextIOWrapper(stream.buffer, encoding='utf-8'))
+        if stream is None:
+            stream = sys.stdout
+        if not isinstance(stream, io.TextIOWrapper):
+            stream = io.TextIOWrapper(stream.buffer, encoding='utf-8')
+        super().__init__(stream)
 
 
 class LogManager:

@@ -113,3 +113,9 @@ llm_pydantic = LLMPydantic()
 
 
 __all__ = ['LLMPydantic']
+
+
+if __name__ == '__main__':
+    js_str = """```json\n{\n  \"title\": \"书店里的下午茶时光\",\n  \"description\": \"在朵云书院，享受一杯温暖的拿铁与精致的小点心，翻阅新书，沉浸在宁静的下午茶时光中。让阅读与美味相伴。\",\n  \"keywords\": [\"下午茶\", \"朵云书院\", \"阅读\"]\n}\n```"""
+    result = llm_pydantic.extract_json(js_str)
+    print(result)

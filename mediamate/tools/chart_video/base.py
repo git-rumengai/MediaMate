@@ -127,14 +127,3 @@ class BaseChat:
         # 输出视频文件
         final_clip.write_videofile(output_file, codec="libx264")
         return output_file
-
-
-if __name__ == '__main__':
-    # from mediamate.tools.chart_video.charts.bar_race import BarRace
-    # data_path = r'C:\Users\Admin\Desktop\MediaMate\data\upload\xiaohongshu\RuMengAI\bar_race'
-    # cv = BarRace(data_path).create_video()
-
-    from mediamate.tools.chart_video.charts.line_trend import LineTrend
-
-    data_path = r'C:\Users\Admin\Desktop\MediaMate\data\upload\xiaohongshu\RuMengAI\line_trend'
-    cv = LineTrend(data_path).create_video()

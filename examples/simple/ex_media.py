@@ -38,7 +38,7 @@ class ResponseModel(BaseModel):
 IMAGES_PROMPT = f"""
 根据给出的一组图片内容帮我生成一篇主题为"下午茶"的小红书风格文案。
 
-按照如下schema描述输出标准的紧凑JSON格式：
+按照如下schema描述输出标准的JSON格式. 请确保JSON数据没有多余的空格和换行, 只包含最小的必要格式：
 ResponseModel
 
 图片描述：
@@ -47,7 +47,7 @@ ResponseModel
 VIDEO_PROMPT = f"""
 根据这个视频内容帮我生成一篇主题为"精选好房"的抖音风格文案。
 
-按照如下schema描述输出标准的紧凑JSON格式：
+按照如下schema描述输出标准的JSON格式. 请确保JSON数据没有多余的空格和换行, 只包含最小的必要格式：
 ResponseModel
 
 视频描述：
@@ -143,6 +143,6 @@ async def get_media_gpt_video():
 
 
 if __name__ == '__main__':
-    # download_media()      # 只需要运行1次
+    download_media()      # 只需要运行1次
     asyncio.run(get_media_gpt_image())
-    # asyncio.run(get_media_gpt_video())
+    asyncio.run(get_media_gpt_video())

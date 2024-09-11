@@ -101,9 +101,9 @@ class BaseMedia(ABC):
         """ 处理滑动框 """
         # 下载图片
         prefix = page.url.split('.')[1]
-        background_image_path = f'{self.data_path.static_imgs}/{prefix}_bg.png'
-        gap_image_path = f'{self.data_path.static_imgs}/{prefix}_gap.png'
-        result_image_path = f'{self.data_path.static_imgs}/{prefix}_result.png'
+        background_image_path = f'{self.data_path.verify_imgs}/{prefix}_bg.png'
+        gap_image_path = f'{self.data_path.verify_imgs}/{prefix}_gap.png'
+        result_image_path = f'{self.data_path.verify_imgs}/{prefix}_result.png'
         async with aiohttp.ClientSession() as session:
             await asyncio.gather(
                 download_image(session, bg_url, background_image_path),

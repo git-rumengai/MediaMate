@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前沿资讯</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body class="bg-white font-sans">
+    <!-- Top bar -->
+    <div class="flex justify-between items-center px-4 py-2 bg-white">
+        <span class="text-black text-lg">{{ current_time }}</span>
+        <div class="flex items-center space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- Page Header with Title, Author, Date, and QR Code -->
+    <div class="px-4 py-4 flex justify-between items-center border-b">
+        <div class="w-2/3 text-center">
+            <h1 class="text-2xl font-bold text-black text-xl">{{ title }}</h1>
+            <p class="text-gray-500 mt-4 text-xs">{{ username }}</p>
+            <p class="text-gray-500 text-xs">{{ date }}</p>
+        </div>
+        <div class="w-1/3">
+            <img src="{{ qr_code }}" alt="QR code image" class="rounded-lg">
+        </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="flex justify-between px-4 py-2 text-sm text-gray-500">
+        <span class="font-bold text-black">{{ topic }}</span>
+        <span>美食娱乐</span>
+        <span>前沿科技</span>
+        <span>金融财经</span>
+        <span>商业消费</span>
+        <i class="fas fa-ellipsis-h"></i>
+    </div>
+
+    <!-- News List -->
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        {% for news_item in news_list %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+            <img class="w-full h-40 object-cover" src="{{ news_item.image }}" alt="Google 在屏幕上显示的图片">
+            <div class="p-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">{{ news_item.title }}</h2>
+                <p class="text-gray-600 mb-4">{{ news_item.body }}</p>
+                <div class="flex items-center text-gray-500 text-sm">
+                    <i class="fas fa-globe mr-1"></i>
+                    <span>{{ news_item.source }} © {{ news_item.date }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Bottom navigation -->
+    <div class="bottom-0 left-0 right-0 bg-white shadow-md">
+        <div class="flex justify-around text-gray-500 py-3">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-home text-2xl"></i>
+                <span class="text-xs">资讯</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <i class="fas fa-history text-2xl"></i>
+                <span class="text-xs">图文</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <i class="fas fa-stream text-2xl"></i>
+                <span class="text-xs">视频</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <i class="fas fa-user text-2xl"></i>
+                <span class="text-xs">我的</span>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

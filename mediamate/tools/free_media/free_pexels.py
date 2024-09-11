@@ -7,7 +7,6 @@ from mediamate.tools.api_market.chat import Chat
 from mediamate.utils.llm_pydantic import llm_pydantic
 from mediamate.utils.log_manager import log_manager
 from mediamate.utils.enums import VideoOrientation
-from enum import Enum
 
 
 logger = log_manager.get_logger(__file__)
@@ -30,7 +29,7 @@ PHOTO_PROMPT = """
 {text}
 ###
 
-按照如下schema描述输出标准的紧凑JSON格式：
+按照如下schema描述输出标准的JSON格式. 请确保JSON数据没有多余的空格和换行, 只包含最小的必要格式：
 ResponseModel
 """
 
@@ -40,7 +39,7 @@ VIDEO_PROMPT = """
 {text}
 ###
 
-按照如下schema描述输出标准的紧凑JSON格式：
+按照如下schema描述输出标准的JSON格式. 请确保JSON数据没有多余的空格和换行, 只包含最小的必要格式：
 ResponseModel
 """
 

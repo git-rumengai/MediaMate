@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平台精选</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <div class="bg-white shadow p-4 flex justify-between items-center">
+        <div class="text-sm">{{ date }}</div>
+        <div class="font-bold text-lg flex items-center">
+            {{ title }}
+            <img src="{{ qr_code }}" alt="QR Code" class="ml-2 w-12 h-12">
+        </div>
+        <div class="text-sm">
+            <i class="fas fa-search"></i>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="p-4">
+        {% for news_item in news_list %}
+        <div class="bg-white rounded-lg shadow mb-4">
+            <div class="relative">
+                <img src="{{ news_item.image }}" alt="Hand holding a phone with blue wallpaper" class="w-full h-60 object-cover rounded-t-lg">
+                <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4 rounded-b-lg">
+                    <div class="text-sm">{{ news_item.source }}</div>
+                    <h2 class="text-xl font-bold">{{ news_item.title }}</h2>
+                    <p class="text-xs">{{ news_item.date }}</p>
+                </div>
+            </div>
+            <ul class="list-disc list-inside p-4 text-gray-800 text-sm">
+                <li>{{ news_item.body }}</li>
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -69,7 +69,7 @@ class MediaPath(BaseModel):
     elements_home_file: Optional[str] = None
     elements_creator_file: Optional[str] = None
 
-    static_imgs: Optional[str] = None
+    verify_imgs: Optional[str] = None
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -108,8 +108,8 @@ class MediaPath(BaseModel):
         self.elements_home_file = os.path.join(self.elements, f'{self.info.domain}/home.yaml')
         self.elements_creator_file = os.path.join(self.elements, f'{self.info.domain}/creator.yaml')
         # 静态图片目录
-        self.static_imgs = os.path.join(config.PROJECT_DIR, 'static/imgs')
-        os.makedirs(self.static_imgs, exist_ok=True)
+        self.verify_imgs = os.path.join(config.DATA_DIR, 'active/verify_imgs')
+        os.makedirs(self.verify_imgs, exist_ok=True)
 
 
 class MediaActionRecord(BaseModel):

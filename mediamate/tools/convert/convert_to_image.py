@@ -6,9 +6,6 @@ from PIL import Image
 from pdf2image import convert_from_path
 from typing import Optional
 from playwright.async_api import async_playwright
-import logging
-logging.getLogger("comtypes.client._code_cache").setLevel(logging.WARNING)
-from comtypes.client import CreateObject
 
 
 STYLE1 = """
@@ -100,6 +97,8 @@ class ConvertToImage:
             if use_phone:
                 iphone_12 = p.devices['iPhone 12']
                 context = await browser.new_context(**iphone_12)
+            else:
+                context = await browser.new_context()
             page = await context.new_page()
             await page.set_content(html_content)
             await page.wait_for_load_state('networkidle')
@@ -151,7 +150,11 @@ class ConvertToImage:
             image.save(image_path, 'PNG')
 
     async def ppt_to_images(self, ppt_path, output_folder: Optional[str] = None):
-        # 创建输出目录（如果不存在）
+        """  """
+        import logging
+        logging.getLogger("comtypes.client._code_cache").setLevel(logging.WARNING)
+        from comtypes.client import CreateObject
+
         output_folder = os.path.dirname(ppt_path) if not output_folder else output_folder
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
@@ -159,6 +162,7 @@ class ConvertToImage:
         ppt = CreateObject("PowerPoint.Application")
         ppt.Visible = 1
         presentation = ppt.Presentations.Open(ppt_path)
+        ppt.WindowState = 2
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         for i, slide in enumerate(presentation.Slides):

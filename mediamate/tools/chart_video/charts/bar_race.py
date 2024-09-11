@@ -134,8 +134,3 @@ class BarRace(BaseChat):
             logger.info(i)
             fig.update(data=frame.data, layout=frame.layout)
             fig.write_image(f'{frames_dir}/frame_{i:04d}.png', width=self.width, height=self.height, scale=2)
-
-
-if __name__ == '__main__':
-    data_path = r'/data/upload/xiaohongshu/RuMengAI/bar_race'
-    cv = BarRace(data_path).generate_frames()

@@ -8,6 +8,7 @@ from mediamate.config import config, ConfigManager
 from mediamate.utils.log_manager import log_manager
 from mediamate.utils.schema import MediaInfo, MediaPath
 from mediamate.utils.enums import UrlType
+from mediamate.utils.const import TRACE_PLAYWRIGHT_DEV
 
 
 logger = log_manager.get_logger(__file__)
@@ -19,13 +20,31 @@ class KimiPPT:
         self.convert = ConvertToImage()
         self.kimi_client = KimiClient()
 
-    async def get_ppt(self, topic: str, logo_path: str, username: str):
+    async def get_ppt(self,
+                      headless: bool,
+                      topic: str,
+                      logo_path: str,
+                      username: str,
+                      scene: str,
+                      style: str,
+                      color_index: int,
+                      card_index: int):
         """  """
-        # async with async_playwright() as p:
-        #     context, page = await self.kimi_client.login(p)
-        #     await self.kimi_client.get_ppt(page, self.ppt_path, topic)
-        #     await context.close()
-        self.ppt_path = self.kimi_client.update_ppt(ppt_path=self.ppt_path, logo_path=logo_path, username=username)
+        async with async_playwright() as p:
+            context, page = await self.kimi_client.login(p, headless=headless)
+            try:
+                await self.kimi_client.get_ppt(page, self.ppt_path, topic, scene, style, color_index, card_index)
+            except Exception as e:
+                logger.error(e)
+            finally:
+                kimi_dir = f'{config.DATA_DIR}/active/kimi'
+                os.makedirs(kimi_dir, exist_ok=True)
+                filename = f'{kimi_dir}/trace_kimi.zip'
+                await context.tracing.stop(path=filename)
+                await context.close()
+                logger.info(f'可进入查看跟踪结果: {TRACE_PLAYWRIGHT_DEV} , file: {filename}')
+        if username and logo_path:
+            self.ppt_path = self.kimi_client.update_ppt(ppt_path=self.ppt_path, logo_path=logo_path, username=username)
         return self.ppt_path
 
     async def save_to_xhs(self, metadata: dict):

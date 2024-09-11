@@ -18,3 +18,4 @@ streamlit
 python-pptx
 pdf2image
 python-pptx-interface
+comtypes

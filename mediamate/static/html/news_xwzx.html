@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻资讯</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white text-gray-800">
+    <div class="max-w-5xl mx-auto p-4">
+        <!-- Title Section -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold">{{ title }}</h1>
+                <p class="text-lg text-gray-500 mt-2">{{ subtitle }}</p>
+                <p class="text-sm text-gray-400">{{ username }} | {{ date }}</p>
+            </div>
+            <!-- QR Code Image -->
+            <div>
+                <img src="{{ qr_code }}" alt="QR Code" class="h-28 w-28">
+            </div>
+        </div>
+
+        <!-- News Section -->
+        <div class="mt-10 space-y-10 mb-10">
+            {% for news_item in news_list %}
+            <div class="flex space-x-4 ">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-400">{{ news_item.date }}</p>
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-xl font-semibold">{{ news_item.title }}</h2>
+                        <img src="{{ news_item.image }}" alt="Robot holding a tablet" class="w-20 h-20 object-cover rounded-md">
+                    </div>
+                    <p class="mt-2 text-gray-600">{{ news_item.body }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

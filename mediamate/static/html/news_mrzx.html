@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>每日速递</title>
+    <title>每日资讯</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -204,7 +204,6 @@
                 </tr>
             </table>
 
-
             <div class="date playfair-display_400">
                 {{ date }}
             </div>
@@ -231,9 +230,11 @@
             {% endfor %}
         </div>
 
-        <div class="footer">
-            <img src="{{ data_imag }}" alt="数据" style="max-width: 90%; margin: 2px;">
-        </div>
+        {% if data_img %}
+            <div class="footer">
+                <img src="{{ data_img }}" alt="数据" style="max-width: 90%; margin: 2px;">
+            </div>
+        {% endif %}
 
     </div>
 <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.min.js"></script>

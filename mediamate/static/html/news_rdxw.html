@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>热点新闻</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+            margin: 0;
+            padding: 0;
+            color: #444;
+        }
+
+        /* 容器样式 */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* 标题和二维码样式 */
+        .headline-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: linear-gradient(0deg, #a38dd2 0%, #c95862 100%);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 标题样式 */
+        .headline {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        /* 副标题样式 */
+        .sub-headline {
+            font-size: 18px;
+            color: #ffe6e6;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* 作者和日期 */
+        .author-date {
+            font-size: 14px;
+            color: #f2f2f2;
+            margin-top: 5px;
+        }
+
+        /* 二维码图片样式 */
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+        }
+
+        /* 新闻卡片的布局 */
+        .news-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        /* 新闻卡片样式 */
+        .news-card {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 120%);
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* 鼠标悬停效果 */
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 新闻标题 */
+        .news-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .news-title:hover {
+            color: #ffe6e6;
+        }
+
+        /* 新闻摘要 */
+        .news-summary {
+            font-size: 16px;
+            color: #f2f2f2;
+            line-height: 1.6;
+        }
+
+        /* 新闻发布日期 */
+        .news-meta {
+            font-size: 14px;
+            color: #e0e0e0;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题和二维码区域 -->
+        <div class="headline-container">
+            <div>
+                <h1 class="headline">{{ title }}</h1>
+                <h2 class="sub-headline">{{ subtitle }}</h2>
+                <div class="author-date">{{ username }} | {{ date }}</div>
+            </div>
+            <img src="{{ qr_code }}" alt="二维码" class="qr-code">
+        </div>
+
+        <!-- 新闻列表 -->
+        <div class="news-list">
+            <!-- 遍历 all_news 字典并渲染每个新闻部分 -->
+            {% for news in news_list %}
+                <div class="news-card">
+                    <div class="news-content">
+                        <a href="#" class="news-title">{{ loop.index }}. {{ news.title }}</a>
+                        <div class="news-meta">发布于：{{ news.date }}</div>
+                        <p class="news-summary">{{ news.body }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

@@ -13,11 +13,13 @@ from mediamate.agents.simple.image_newspaper import ImageNewspaper
 
 
 async def get_image_news():
+    news_params = {
+        'blacklist': ('aibase', ),
+        'limit': 5,
+        'days': 7
+    }
     news_title = '财经新闻'
-    # news_keywords = ('AI图片', 'AI音乐', 'AI视频', 'AI搜索')
     news_keywords = ('量化私募', 'A股', '龙虎榜')
-
-    # 发布图文时的参数配置: 发布标题, 描述, 标签, 地点
     metadata = {
         '标题': news_title,
         '描述': '通过AI自动生成新闻并上传',
@@ -28,8 +30,9 @@ async def get_image_news():
         '允许保存': '否',
     }
     inp = ImageNewspaper(metadata['标题'], news_keywords)
-    await inp.save_to_xhs(metadata)
-    await inp.save_to_dy(metadata)
+    news = await inp.get_news(**news_params)
+    await inp.save_to_xhs(news, metadata)
+    await inp.save_to_dy(news, metadata)
 
 
 if __name__ == '__main__':

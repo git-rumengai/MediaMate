@@ -188,9 +188,9 @@ class KimiClient:
     async def get_ppt(self, page: Page,
                       ppt_path: str,
                       topic: str,
-                      scene: str = '商业计划',
-                      style: str = '扁平简约',
-                      color_index: int = -3,
+                      scene: str,
+                      style: str,
+                      color_index: int,
                       card_index: int = 0
                       ) -> Page:
         """  """

@@ -20,3 +20,18 @@
 - 配置中同一个"account"最多同时打开【抖音主页, 抖音创作者中心, 小红书主页, 小红书创作者中心】4个界面
 - 同一个平台多账户需要配置中填写不同的"account"名称
 - 电脑性能决定同时启动账户的数量, 建议不要在同一个ip地址登录多个账户
+
+### SSLError 报错
+```python
+urllib3.exceptions.SSLError
+```
+在脚本中禁用SSL验证
+```python
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
+```
+
+### 运行结果有很多重复新闻
+填写的新闻关键词时相关性太高, 比如新闻关键词填写【'AI', 'AIGC'】, 会搜索到大量重复新闻.
+

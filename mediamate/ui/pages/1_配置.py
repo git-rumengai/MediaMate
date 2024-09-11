@@ -8,10 +8,6 @@ from mediamate.config import config
 from dotenv import dotenv_values
 from mediamate.utils.log_manager import log_manager
 
-"""
-点赞, 评论, 收藏
-
-"""
 
 logger = log_manager.get_logger(__file__)
 
@@ -358,7 +354,6 @@ def display_media(media_name: str):
         unique_key = 'ai_prompt_content_chat_reply'
         if media_config['common'].get(unique_key):
             media_config['common'][unique_key] = st.text_area('如果有人发消息, 根据最后5条对话内容作为参考, 回复对方', value=media_config['common'].get(unique_key, ''), key=f'{media_name}_common_{unique_key}_{index}')
-
 
         new_media_configs.append(media_config)
     st.session_state.media_config['media'][media_name] = new_media_configs

@@ -1,9 +1,9 @@
 import os
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple, List
 
-from mediamate.tools.duckduckgo import AsyncDDGS
+from mediamate.tools.duckduckgo.web_news import WebNews
 from mediamate.tools.convert.convert_to_image import ConvertToImage
 from mediamate.config import config, ConfigManager
 from mediamate.utils.log_manager import log_manager
@@ -18,35 +18,26 @@ class ImageNewspaper:
     """ 从Google获取新闻, 转Markdown, 再转图片 """
     def __init__(self, title: str, keywords: Tuple[str, ...]):
         self.cti = ConvertToImage()
-        self.md_news = []
+        self.web_news = WebNews()
         self.title = title
         self.keywords = keywords
 
-    async def get_ddgs_news(self, limit: int, days: int) -> List[str]:
+    async def get_news(self, blacklist: tuple, limit: int, days: int) -> List[str]:
         """ 获取新闻 """
-        self.md_news = []
+        md_news = []
         for keyword in self.keywords:
-            news = await AsyncDDGS().anews(keyword, region='cn-zh', safesearch='off', timelimit=None, max_results=limit)
-            # 过滤并排序
+            news = await self.web_news.get_ddgs_news([keyword], blacklist=blacklist, limit=limit, days=days)
             if news:
-                recent_news = sorted(
-                    (item for item in news
-                     if
-                     datetime.fromisoformat(item['date']).replace(tzinfo=None) >= datetime.now() - timedelta(days=days)),
-                    key=lambda x: datetime.fromisoformat(x['date']).replace(tzinfo=None),
-                    reverse=True
-                )
-                if recent_news:
-                    md_text = f"""# {self.title}: {keyword}\n """
-                    for inner, item in enumerate(recent_news):
-                        md_text += f"""\n#### {item['title'].strip()}\n\n> 详情:{item['body'].strip()}\n\n发布日期:{item['date'].strip()} """
-                    self.md_news.append(md_text)
-        return self.md_news
+                for index, new in enumerate(news):
+                    news[index]['date'] = datetime.fromisoformat(new['date']).strftime('%Y-%m-%d %H:%M')
+                md_text = f"""# {self.title}: {keyword}\n """
+                for inner, item in enumerate(news):
+                    md_text += f"""\n#### {item['title'].strip()}\n\n> 详情: {item['body'].strip()}\n\n发布日期:{item['date']} """
+                md_news.append(md_text)
+        return md_news
 
-    async def save_to_xhs(self, metadata: dict, limit: int = 5, days: int = 7):
+    async def save_to_xhs(self, md_news: List[str], metadata: dict):
         """ 保存到小红书上传目录 """
-        if len(self.md_news) == 0:
-            await self.get_ddgs_news(limit, days)
         media_config = config.MEDIA.get('media', {})
         xhs_config = media_config.get('xhs', [])
         for xhs in xhs_config:
@@ -56,7 +47,7 @@ class ImageNewspaper:
             if os.path.exists(image_news_path):
                 shutil.rmtree(image_news_path)
             os.makedirs(image_news_path, exist_ok=True)
-            for index, news in enumerate(self.md_news):
+            for index, news in enumerate(md_news):
                 await self.cti.markdown_to_image(news, f'{image_news_path}/{index}.png')
             metadata_config = ConfigManager(f'{image_news_path}/metadata.yaml')
             await metadata_config.set('标题', metadata.get('标题'))
@@ -65,10 +56,8 @@ class ImageNewspaper:
             await metadata_config.set('地点', metadata.get('地点'))
             logger.info(f'数据已保存至: {image_news_path}')
 
-    async def save_to_dy(self, metadata: dict, limit: int = 5, days: int = 7):
+    async def save_to_dy(self, md_news: List[str], metadata: dict):
         """ 保存到抖音上传目录 """
-        if len(self.md_news) == 0:
-            await self.get_ddgs_news(limit, days)
         media_config = config.MEDIA.get('media', {})
         dy_config = media_config.get('dy', [])
         for dy in dy_config:
@@ -78,7 +67,7 @@ class ImageNewspaper:
             if os.path.exists(image_news_path):
                 shutil.rmtree(image_news_path)
             os.makedirs(image_news_path, exist_ok=True)
-            for index, news in enumerate(self.md_news):
+            for index, news in enumerate(md_news):
                 await self.cti.markdown_to_image(news, f'{image_news_path}/{index}.png')
             metadata_config = ConfigManager(f'{image_news_path}/metadata.yaml')
             await metadata_config.set('标题', metadata.get('标题'))

@@ -1,0 +1,82 @@
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>我的订阅</title>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Top bar with time and icons -->
+    <div class="flex justify-between items-center px-4 py-2">
+        <span class="text-lg">{{ current_time }}</span>
+        <div class="flex items-center space-x-2">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- Tabs navigation -->
+    <div class="flex justify-around items-center border-b border-gray-200 bg-white py-2">
+        <span class="text-black">我的订阅</span>
+        <span class="text-gray-400">发现</span>
+        <span class="text-gray-400">新闻</span>
+        <i class="fas fa-bars text-gray-400"></i>
+    </div>
+
+    <!-- Sub navigation -->
+    <div class="flex items-center justify-around bg-white px-4 py-3 border-b border-gray-200" style="height: 120px;">
+        <div>
+            <h1 class="text-lg font-semibold mb-4">{{ title }}</h1>
+            <p class="text-gray-400 text-sm">{{ username }} | {{ date }}</p>
+        </div>
+        <div class="w-28 h-28">
+            <img src="{{ qr_code }}" alt="QR Code" class="w-full h-full">
+        </div>
+    </div>
+
+    <!-- Podcast Cards -->
+    <div class="p-4">
+        {% for news_item in news_list %}
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-4">
+            <div class="flex items-center mb-2">
+                <img src="{{ news_item.image  }}" alt="Podcast Logo 1" class="w-12 h-12 rounded mr-4">
+                <i class="fas fa-globe mr-auto text-gray-400"></i>
+                <div>
+                    <h3 class="font-bold">{{ news_item.source }}</h3>
+                    <p class="text-gray-400 text-sm">{{ news_item.date }}</p>
+                </div>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">{{ news_item.title }}</h2>
+            <p class="text-gray-600 mb-4">{{ news_item.body }}</p>
+            <p class="text-gray-400 text-sm mt-2">来源：<span class="text-blue-600">{{ news_item.source }}</span></p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Bottom navigation -->
+    <div class="bottom-0 left-0 right-0 bg-white shadow-lg">
+        <div class="flex justify-around py-4 text-gray-400">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-newspaper"></i>
+                <span class="text-xs">资讯</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <i class="fas fa-play-circle"></i>
+                <span class="text-xs">视频</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <i class="fas fa-stream"></i>
+                <span class="text-xs">图文</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <i class="fas fa-user"></i>
+                <span class="text-xs">我的</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

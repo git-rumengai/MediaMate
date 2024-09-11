@@ -32,7 +32,7 @@ async def get_demo():
         if os.path.exists(demo_path):
             shutil.rmtree(demo_path)
         os.makedirs(demo_path, exist_ok=True)
-        with open(f'{demo_path}/rumengai.png', 'wb') as file:
+        with open(f'{demo_path}/0.png', 'wb') as file:
             file.write(response.content)
 
         metadata = {

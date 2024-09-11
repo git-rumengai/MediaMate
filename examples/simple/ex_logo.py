@@ -33,12 +33,12 @@ async def get_logo(number: int = 1):
     mascot_gpt = LogoGPT()
     # 发布图文时的参数配置: 发布标题, 描述, 标签, 地点
     metadata = {
-        '标题': '随手设计个吉祥物',
-        '描述': '通过AI自动生成吉祥物并上传',
-        '标签': ('吉祥物', 'AI', 'Agent'),
+        '标题': '随手设计个LOGO',
+        '描述': '通过AI自动生成LOGO并上传',
+        '标签': ('LOGO', 'AI', 'Agent'),
         '地点': '上海',
         '音乐': '热歌榜',
-        '贴纸': '吉祥物',
+        '贴纸': 'LOGO',
         '允许保存': '否',
     }
     prompts = [random.choice(LOGO_PROMPT) for _ in range(number)]
